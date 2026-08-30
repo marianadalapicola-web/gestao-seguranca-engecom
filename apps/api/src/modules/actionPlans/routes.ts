@@ -25,6 +25,7 @@ router.use(
     dateField: 'dueDate',
     include: commonRelationsInclude,
     defaultSort: { field: 'dueDate', dir: 'asc' },
+    hasAttachments: true,
     createSchema: createActionPlanSchema,
     updateSchema: updateActionPlanSchema,
     filters: [
@@ -50,7 +51,7 @@ router.use(
           type: 'NEW_ASSIGNMENT',
           title: 'Novo plano de ação atribuído',
           message: `Você foi definido como responsável pela ação: "${record.action}".`,
-          link: `/planos-de-acao/${record.id}`,
+          link: `/planos-de-acao?open=${record.id}`,
         });
       }
     },
@@ -61,7 +62,7 @@ router.use(
           type: 'NEW_ASSIGNMENT',
           title: 'Plano de ação atribuído a você',
           message: `Você foi definido como responsável pela ação: "${record.action}".`,
-          link: `/planos-de-acao/${record.id}`,
+          link: `/planos-de-acao?open=${record.id}`,
         });
       }
     },

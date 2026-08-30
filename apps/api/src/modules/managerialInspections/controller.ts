@@ -3,6 +3,7 @@ import { prisma } from '../../lib/prisma';
 import { recordAudit } from '../../lib/audit';
 import { asyncHandler } from '../../utils/asyncHandler';
 import { NotFoundError } from '../../utils/errors';
+import { deleteAttachmentFilesForRecord } from '../../lib/attachmentStorage';
 import { computeChecklistScore } from './scoring';
 
 const include = {
@@ -94,6 +95,8 @@ export const updateManagerialInspection = asyncHandler(async (req: Request, res:
 export const deleteManagerialInspection = asyncHandler(async (req: Request, res: Response) => {
   const existing = await prisma.managerialInspection.findUnique({ where: { id: req.params.id } });
   if (!existing) throw new NotFoundError();
+
+  await deleteAttachmentFilesForRecord('managerialInspections', req.params.id);
 
   await prisma.managerialInspection.delete({ where: { id: req.params.id } });
   await recordAudit({ userId: req.user!.id, action: 'DELETE', module: 'managerialInspections', recordId: req.params.id, req });

@@ -22,7 +22,7 @@ const SOURCES: SearchSource[] = [
         where: { OR: [{ theme: { contains: term, mode: 'insensitive' } }, { type: { contains: term, mode: 'insensitive' } }] },
         take: 5,
       });
-      return items.map((i) => ({ id: i.id, title: i.theme ?? i.type, subtitle: new Date(i.date).toLocaleDateString('pt-BR'), link: `/rituais/${i.id}` }));
+      return items.map((i) => ({ id: i.id, title: i.theme ?? i.type, subtitle: new Date(i.date).toLocaleDateString('pt-BR'), link: `/rituais?open=${i.id}` }));
     },
   },
   {
@@ -30,7 +30,7 @@ const SOURCES: SearchSource[] = [
     label: 'DDS',
     run: async (term) => {
       const items = await prisma.dds.findMany({ where: { theme: { contains: term, mode: 'insensitive' } }, take: 5 });
-      return items.map((i) => ({ id: i.id, title: i.theme, subtitle: new Date(i.date).toLocaleDateString('pt-BR'), link: `/dds/${i.id}` }));
+      return items.map((i) => ({ id: i.id, title: i.theme, subtitle: new Date(i.date).toLocaleDateString('pt-BR'), link: `/dds?open=${i.id}` }));
     },
   },
   {
@@ -38,7 +38,7 @@ const SOURCES: SearchSource[] = [
     label: 'Inspeções',
     run: async (term) => {
       const items = await prisma.inspection.findMany({ where: { type: { contains: term, mode: 'insensitive' } }, take: 5 });
-      return items.map((i) => ({ id: i.id, title: i.type, subtitle: new Date(i.date).toLocaleDateString('pt-BR'), link: `/inspecoes/${i.id}` }));
+      return items.map((i) => ({ id: i.id, title: i.type, subtitle: new Date(i.date).toLocaleDateString('pt-BR'), link: `/inspecoes?open=${i.id}` }));
     },
   },
   {
@@ -49,7 +49,7 @@ const SOURCES: SearchSource[] = [
         where: { OR: [{ category: { contains: term, mode: 'insensitive' } }, { description: { contains: term, mode: 'insensitive' } }] },
         take: 5,
       });
-      return items.map((i) => ({ id: i.id, title: i.category, subtitle: i.description.slice(0, 60), link: `/desvios/${i.id}` }));
+      return items.map((i) => ({ id: i.id, title: i.category, subtitle: i.description.slice(0, 60), link: `/desvios?open=${i.id}` }));
     },
   },
   {
@@ -57,7 +57,7 @@ const SOURCES: SearchSource[] = [
     label: 'Incidentes',
     run: async (term) => {
       const items = await prisma.incident.findMany({ where: { type: { contains: term, mode: 'insensitive' } }, take: 5 });
-      return items.map((i) => ({ id: i.id, title: i.type, subtitle: new Date(i.date).toLocaleDateString('pt-BR'), link: `/incidentes/${i.id}` }));
+      return items.map((i) => ({ id: i.id, title: i.type, subtitle: new Date(i.date).toLocaleDateString('pt-BR'), link: `/incidentes?open=${i.id}` }));
     },
   },
   {
@@ -65,7 +65,7 @@ const SOURCES: SearchSource[] = [
     label: 'Planos de Ação',
     run: async (term) => {
       const items = await prisma.actionPlan.findMany({ where: { action: { contains: term, mode: 'insensitive' } }, take: 5 });
-      return items.map((i) => ({ id: i.id, title: i.action, subtitle: i.status, link: `/planos-de-acao/${i.id}` }));
+      return items.map((i) => ({ id: i.id, title: i.action, subtitle: i.status, link: `/planos-de-acao?open=${i.id}` }));
     },
   },
   {
@@ -76,7 +76,7 @@ const SOURCES: SearchSource[] = [
         where: { OR: [{ name: { contains: term, mode: 'insensitive' } }, { email: { contains: term, mode: 'insensitive' } }] },
         take: 5,
       });
-      return items.map((i) => ({ id: i.id, title: i.name, subtitle: i.email, link: `/usuarios/${i.id}` }));
+      return items.map((i) => ({ id: i.id, title: i.name, subtitle: i.email, link: `/usuarios?open=${i.id}` }));
     },
   },
 ];

@@ -11,6 +11,7 @@ export default createCrudRouter({
   dateField: 'date',
   include,
   defaultSort: { field: 'date', dir: 'desc' },
+  hasAttachments: true,
   createSchema: createIncidentSchema,
   updateSchema: updateIncidentSchema,
   filters: [

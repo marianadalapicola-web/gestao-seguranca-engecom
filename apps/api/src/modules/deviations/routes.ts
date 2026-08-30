@@ -13,7 +13,7 @@ async function notifyResponsible(record: any) {
     type: 'NEW_ASSIGNMENT',
     title: 'Novo desvio atribuído',
     message: `Você foi definido como responsável pelo desvio: "${record.category}".`,
-    link: `/desvios/${record.id}`,
+    link: `/desvios?open=${record.id}`,
   });
 }
 
@@ -24,6 +24,7 @@ export default createCrudRouter({
   dateField: 'date',
   include,
   defaultSort: { field: 'date', dir: 'desc' },
+  hasAttachments: true,
   createSchema: createDeviationSchema,
   updateSchema: updateDeviationSchema,
   filters: [

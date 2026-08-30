@@ -10,12 +10,9 @@ import { authorize } from '../../middleware/authorize';
 import { validate } from '../../middleware/validate';
 import { asyncHandler } from '../../utils/asyncHandler';
 import { recordAudit } from '../../lib/audit';
-import { env } from '../../config/env';
 import { ForbiddenError, NotFoundError, ValidationError } from '../../utils/errors';
 import { Module, hasPermission } from '../../config/permissions';
-
-const UPLOAD_ROOT = path.resolve(process.cwd(), env.uploadDir);
-if (!fs.existsSync(UPLOAD_ROOT)) fs.mkdirSync(UPLOAD_ROOT, { recursive: true });
+import { UPLOAD_ROOT } from '../../lib/attachmentStorage';
 
 const MODULE_TO_FK: Record<string, { field: string; delegate: string }> = {
   rituals: { field: 'ritualId', delegate: 'ritual' },

@@ -9,6 +9,7 @@ export default createCrudRouter({
   dateField: 'date',
   include: commonRelationsInclude,
   defaultSort: { field: 'date', dir: 'desc' },
+  hasAttachments: true,
   createSchema: createRefusalRightSchema,
   updateSchema: updateRefusalRightSchema,
   filters: [

@@ -8,6 +8,7 @@ import { recordAudit } from './audit';
 import { NotFoundError } from '../utils/errors';
 import { Module } from '../config/permissions';
 import { prisma } from './prisma';
+import { deleteAttachmentFilesForRecord } from './attachmentStorage';
 
 interface FilterDef {
   param: string;
@@ -23,6 +24,8 @@ export interface CrudConfig {
   filters?: FilterDef[];
   include?: Record<string, unknown>;
   defaultSort?: { field: string; dir: 'asc' | 'desc' };
+  /** Set when this module accepts evidence uploads, so deleting a record also removes its files from disk. */
+  hasAttachments?: boolean;
   createSchema: ZodTypeAny;
   updateSchema: ZodTypeAny;
   beforeCreate?: (data: Record<string, unknown>, req: Request) => Promise<Record<string, unknown>> | Record<string, unknown>;
@@ -173,6 +176,13 @@ export function createCrudRouter(config: CrudConfig): Router {
     asyncHandler(async (req, res) => {
       const previous = await delegate.findUnique({ where: { id: req.params.id } });
       if (!previous) throw new NotFoundError();
+
+      // Must run before delegate.delete(): the cascade removes Attachment
+      // rows from the DB as part of that call, so the file names would
+      // otherwise be unrecoverable afterwards, leaking files on disk.
+      if (config.hasAttachments) {
+        await deleteAttachmentFilesForRecord(config.module, req.params.id);
+      }
 
       await delegate.delete({ where: { id: req.params.id } });
       await recordAudit({ userId: req.user!.id, action: 'DELETE', module: config.module, recordId: req.params.id, req });

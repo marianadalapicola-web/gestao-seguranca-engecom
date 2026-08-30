@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Segoe UI", ui-sans-serif, system-ui, Roboto, Helvetica, Arial, sans-serif;
+
+  /* ENGECOM — identidade visual: azul-marinho industrial + neutros técnicos */
+  --color-brand-950: #061527;
+  --color-brand-900: #0a1f38;
+  --color-brand-800: #0f2a4a;
+  --color-brand-700: #133a63;
+  --color-brand-600: #17497e;
+  --color-brand-500: #1f5fa3;
+  --color-brand-400: #3b7fc4;
+  --color-brand-300: #7aa9db;
+  --color-brand-200: #b6d0ec;
+  --color-brand-100: #e1edf9;
+  --color-brand-50: #f2f7fc;
+
+  --color-surface: #f5f7fa;
+  --color-surface-alt: #eef1f6;
+  --color-card: #ffffff;
+  --color-border: #e2e6ed;
+  --color-border-strong: #cbd2dd;
+
+  --color-ink-900: #101828;
+  --color-ink-700: #344054;
+  --color-ink-500: #667085;
+  --color-ink-400: #98a2b3;
+
+  --color-success-50: #ecfdf3;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+
+  --color-warning-50: #fffbeb;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+
+  --color-danger-50: #fef2f2;
+  --color-danger-600: #dc2626;
+  --color-danger-700: #b91c1c;
+
+  --color-info-50: #eff6ff;
+  --color-info-600: #2563eb;
+  --color-info-700: #1d4ed8;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html, body, #root {
+    height: 100%;
+  }
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-ink-900);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background-color: var(--color-brand-200);
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: var(--color-border-strong);
+    border-radius: 9999px;
+  }
+}

@@ -32,7 +32,7 @@ export async function runActionPlanAlerts(): Promise<void> {
           type: 'ACTION_PLAN_OVERDUE',
           title: 'Plano de ação vencido',
           message: `O plano de ação "${plan.action}" está vencido.`,
-          link: `/planos-de-acao/${plan.id}`,
+          link: `/planos-de-acao?open=${plan.id}`,
         });
       }
     }
@@ -52,7 +52,7 @@ export async function runActionPlanAlerts(): Promise<void> {
   for (const plan of dueSoon) {
     const recipients = new Set([plan.responsibleId, plan.createdById].filter(Boolean) as string[]);
     for (const userId of recipients) {
-      const link = `/planos-de-acao/${plan.id}`;
+      const link = `/planos-de-acao?open=${plan.id}`;
       const recent = await prisma.notification.findFirst({
         where: { userId, type: 'ACTION_PLAN_DUE_SOON', link, createdAt: { gte: dedupeSince } },
       });
