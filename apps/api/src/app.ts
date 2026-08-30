@@ -1,0 +1,71 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import morgan from 'morgan';
+import { env } from './config/env';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler';
+
+import authRoutes from './modules/auth/routes';
+import usersRoutes from './modules/users/routes';
+import sitesRoutes from './modules/sites/routes';
+import sectorsRoutes from './modules/sectors/routes';
+import ritualsRoutes from './modules/rituals/routes';
+import ddsRoutes from './modules/dds/routes';
+import inspectionsRoutes from './modules/inspections/routes';
+import deviationsRoutes from './modules/deviations/routes';
+import incidentsRoutes from './modules/incidents/routes';
+import refusalRightsRoutes from './modules/refusalRights/routes';
+import managerialInspectionsRoutes from './modules/managerialInspections/routes';
+import actionPlansRoutes from './modules/actionPlans/routes';
+import indicatorsRoutes from './modules/indicators/routes';
+import idsRoutes from './modules/ids/routes';
+import notificationsRoutes from './modules/notifications/routes';
+import auditRoutes from './modules/audit/routes';
+import attachmentsRoutes from './modules/attachments/routes';
+import dashboardRoutes from './modules/dashboard/routes';
+import reportsRoutes from './modules/reports/routes';
+import searchRoutes from './modules/search/routes';
+
+export const app = express();
+
+app.set('trust proxy', 1);
+app.use(helmet());
+app.use(
+  cors({
+    origin: env.webAppUrl,
+    credentials: true,
+  })
+);
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+if (!env.isProduction) {
+  app.use(morgan('dev'));
+}
+
+app.get('/health', (_req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
+
+app.use('/api/auth', authRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/sites', sitesRoutes);
+app.use('/api/sectors', sectorsRoutes);
+app.use('/api/rituals', ritualsRoutes);
+app.use('/api/dds', ddsRoutes);
+app.use('/api/inspections', inspectionsRoutes);
+app.use('/api/deviations', deviationsRoutes);
+app.use('/api/incidents', incidentsRoutes);
+app.use('/api/refusal-rights', refusalRightsRoutes);
+app.use('/api/managerial-inspections', managerialInspectionsRoutes);
+app.use('/api/action-plans', actionPlansRoutes);
+app.use('/api/indicators', indicatorsRoutes);
+app.use('/api/ids', idsRoutes);
+app.use('/api/notifications', notificationsRoutes);
+app.use('/api/audit', auditRoutes);
+app.use('/api/attachments', attachmentsRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/reports', reportsRoutes);
+app.use('/api/search', searchRoutes);
+
+app.use(notFoundHandler);
+app.use(errorHandler);

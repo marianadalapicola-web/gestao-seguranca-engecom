@@ -1,0 +1,538 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// ENUMS
+// ---------------------------------------------------------------------------
+
+enum Role {
+  ADMIN
+  SAFETY_ENGINEER
+  SAFETY_TECHNICIAN
+  LEADERSHIP
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+}
+
+enum RecordStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  PENDING
+  CANCELED
+}
+
+enum DeviationStatus {
+  OPEN
+  IN_TREATMENT
+  RESOLVED
+  CANCELED
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum IncidentStatus {
+  OPEN
+  INVESTIGATING
+  CLOSED
+}
+
+enum RefusalStatus {
+  OPEN
+  IN_ANALYSIS
+  TREATED
+  CLOSED
+}
+
+enum ActionPlanStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  OVERDUE
+  CANCELED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum NotificationType {
+  ACTION_PLAN_DUE_SOON
+  ACTION_PLAN_OVERDUE
+  NEW_ASSIGNMENT
+  INSPECTION_PENDING
+  RECORD_AWAITING_ACTION
+  ADMIN_NOTICE
+}
+
+// ---------------------------------------------------------------------------
+// CORE / IDENTITY
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String     @id @default(uuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  role         Role
+  status       UserStatus @default(ACTIVE)
+  position     String?
+  avatarUrl    String?
+  lastLoginAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  refreshTokens        RefreshToken[]
+  passwordResetTokens  PasswordResetToken[]
+  auditLogs            AuditLog[]
+  notifications        Notification[]
+  attachmentsUploaded  Attachment[]
+
+  ritualsResponsible        Ritual[]                @relation("RitualResponsible")
+  ritualsCreated            Ritual[]                @relation("RitualCreatedBy")
+  ddsResponsible            Dds[]                   @relation("DdsResponsible")
+  ddsCreated                Dds[]                   @relation("DdsCreatedBy")
+  inspectionsResponsible    Inspection[]            @relation("InspectionResponsible")
+  inspectionsCreated        Inspection[]            @relation("InspectionCreatedBy")
+  deviationsResponsible     Deviation[]             @relation("DeviationResponsible")
+  deviationsCreated         Deviation[]             @relation("DeviationCreatedBy")
+  incidentsCreated          Incident[]              @relation("IncidentCreatedBy")
+  refusalResponsible        RefusalRight[]          @relation("RefusalResponsible")
+  refusalCreated            RefusalRight[]          @relation("RefusalCreatedBy")
+  managerialInspCreated     ManagerialInspection[]  @relation("ManagerialInspCreatedBy")
+  actionPlansResponsible    ActionPlan[]            @relation("ActionPlanResponsible")
+  actionPlansCreated        ActionPlan[]            @relation("ActionPlanCreatedBy")
+  indicatorsResponsible     Indicator[]             @relation("IndicatorResponsible")
+  indicatorsCreated         Indicator[]             @relation("IndicatorCreatedBy")
+
+  @@index([role])
+  @@index([status])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// REFERENCE DATA
+// ---------------------------------------------------------------------------
+
+model Site {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  sectors                Sector[]
+  rituals                Ritual[]
+  dds                    Dds[]
+  inspections            Inspection[]
+  deviations             Deviation[]
+  incidents              Incident[]
+  refusalRights          RefusalRight[]
+  actionPlans            ActionPlan[]
+  indicators             Indicator[]
+}
+
+model Sector {
+  id        String    @id @default(uuid())
+  name      String
+  siteId    String?
+  site      Site?     @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  rituals                Ritual[]
+  dds                    Dds[]
+  inspections            Inspection[]
+  deviations             Deviation[]
+  incidents              Incident[]
+  refusalRights          RefusalRight[]
+  managerialInspections  ManagerialInspection[]
+  actionPlans            ActionPlan[]
+  indicators             Indicator[]
+
+  @@unique([name, siteId])
+}
+
+// ---------------------------------------------------------------------------
+// OPERATIONAL MODULES
+// ---------------------------------------------------------------------------
+
+model Ritual {
+  id             String       @id @default(uuid())
+  date           DateTime
+  time           String?
+  location       String?
+  siteId         String?
+  site           Site?        @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  sectorId       String?
+  sector         Sector?      @relation(fields: [sectorId], references: [id], onDelete: SetNull)
+  responsibleId  String?
+  responsible    User?        @relation("RitualResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
+  type           String
+  participants   String?
+  participantsCount Int?
+  theme          String?
+  notes          String?
+  status         RecordStatus @default(PLANNED)
+  createdById    String
+  createdBy      User         @relation("RitualCreatedBy", fields: [createdById], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  attachments Attachment[]
+
+  @@index([date])
+  @@index([status])
+  @@index([siteId])
+  @@index([sectorId])
+}
+
+model Dds {
+  id                String    @id @default(uuid())
+  date              DateTime
+  theme             String
+  responsibleId     String?
+  responsible       User?     @relation("DdsResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
+  siteId            String?
+  site              Site?     @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  sectorId          String?
+  sector            Sector?   @relation(fields: [sectorId], references: [id], onDelete: SetNull)
+  participants      String?
+  participantsCount Int?
+  description       String?
+  notes             String?
+  createdById       String
+  createdBy         User      @relation("DdsCreatedBy", fields: [createdById], references: [id])
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  attachments Attachment[]
+
+  @@index([date])
+  @@index([siteId])
+  @@index([sectorId])
+}
+
+model Inspection {
+  id             String       @id @default(uuid())
+  date           DateTime
+  type           String
+  siteId         String?
+  site           Site?        @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  sectorId       String?
+  sector         Sector?      @relation(fields: [sectorId], references: [id], onDelete: SetNull)
+  responsibleId  String?
+  responsible    User?        @relation("InspectionResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
+  checklist      Json?
+  result         String?
+  status         RecordStatus @default(PLANNED)
+  notes          String?
+  createdById    String
+  createdBy      User         @relation("InspectionCreatedBy", fields: [createdById], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  attachments Attachment[]
+
+  @@index([date])
+  @@index([status])
+  @@index([siteId])
+  @@index([sectorId])
+}
+
+model Deviation {
+  id             String          @id @default(uuid())
+  date           DateTime
+  location       String?
+  siteId         String?
+  site           Site?           @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  sectorId       String?
+  sector         Sector?         @relation(fields: [sectorId], references: [id], onDelete: SetNull)
+  category       String
+  description    String
+  severity       Severity        @default(MEDIUM)
+  responsibleId  String?
+  responsible    User?           @relation("DeviationResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
+  dueDate        DateTime?
+  status         DeviationStatus @default(OPEN)
+  actionPlanId   String?         @unique
+  actionPlan     ActionPlan?     @relation(fields: [actionPlanId], references: [id], onDelete: SetNull)
+  createdById    String
+  createdBy      User            @relation("DeviationCreatedBy", fields: [createdById], references: [id])
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  attachments Attachment[]
+
+  @@index([date])
+  @@index([status])
+  @@index([severity])
+  @@index([siteId])
+  @@index([sectorId])
+}
+
+model Incident {
+  id            String         @id @default(uuid())
+  date          DateTime
+  time          String?
+  location      String?
+  siteId        String?
+  site          Site?          @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  sectorId      String?
+  sector        Sector?        @relation(fields: [sectorId], references: [id], onDelete: SetNull)
+  type          String
+  description   String
+  involved      String?
+  consequences  String?
+  cause         String?
+  actionsTaken  String?
+  status        IncidentStatus @default(OPEN)
+  createdById   String
+  createdBy     User           @relation("IncidentCreatedBy", fields: [createdById], references: [id])
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  attachments Attachment[]
+
+  @@index([date])
+  @@index([status])
+  @@index([siteId])
+  @@index([sectorId])
+}
+
+model RefusalRight {
+  id               String        @id @default(uuid())
+  date             DateTime
+  workerName       String
+  sectorId         String?
+  sector           Sector?       @relation(fields: [sectorId], references: [id], onDelete: SetNull)
+  siteId           String?
+  site             Site?         @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  location         String?
+  activity         String?
+  reason           String
+  identifiedRisk   String?
+  measuresAdopted  String?
+  responsibleId    String?
+  responsible      User?         @relation("RefusalResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
+  status           RefusalStatus @default(OPEN)
+  createdById      String
+  createdBy        User          @relation("RefusalCreatedBy", fields: [createdById], references: [id])
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  attachments Attachment[]
+
+  @@index([date])
+  @@index([status])
+}
+
+model ManagerialInspection {
+  id                String   @id @default(uuid())
+  date              DateTime
+  team              String?
+  sectorId          String?
+  sector            Sector?  @relation(fields: [sectorId], references: [id], onDelete: SetNull)
+  checklist         Json
+  totalScore        Float    @default(0)
+  maxScore          Float    @default(0)
+  percentage        Float    @default(0)
+  classification    String?
+  nonConformities   String?
+  notes             String?
+  createdById       String
+  createdBy         User     @relation("ManagerialInspCreatedBy", fields: [createdById], references: [id])
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  attachments Attachment[]
+
+  @@index([date])
+  @@index([sectorId])
+}
+
+model ActionPlan {
+  id             String            @id @default(uuid())
+  action         String
+  origin         String?
+  originModule   String?
+  originId       String?
+  responsibleId  String?
+  responsible    User?             @relation("ActionPlanResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
+  sectorId       String?
+  sector         Sector?           @relation(fields: [sectorId], references: [id], onDelete: SetNull)
+  siteId         String?
+  site           Site?             @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  dueDate        DateTime?
+  priority       Priority          @default(MEDIUM)
+  status         ActionPlanStatus  @default(OPEN)
+  completedAt    DateTime?
+  notes          String?
+  createdById    String
+  createdBy      User              @relation("ActionPlanCreatedBy", fields: [createdById], references: [id])
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  deviation   Deviation?
+  attachments Attachment[]
+
+  @@index([status])
+  @@index([dueDate])
+  @@index([sectorId])
+}
+
+model Indicator {
+  id             String    @id @default(uuid())
+  name           String
+  unit           String?
+  targetValue    Float?
+  resultValue    Float?
+  period         String
+  sectorId       String?
+  sector         Sector?   @relation(fields: [sectorId], references: [id], onDelete: SetNull)
+  siteId         String?
+  site           Site?     @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  responsibleId  String?
+  responsible    User?     @relation("IndicatorResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
+  status         String?
+  createdById    String
+  createdBy      User      @relation("IndicatorCreatedBy", fields: [createdById], references: [id])
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([period])
+}
+
+// ---------------------------------------------------------------------------
+// IDS — Indice de Desenvolvimento de Seguranca
+// ---------------------------------------------------------------------------
+
+model IdsConfig {
+  id                  String   @id @default(uuid())
+  version             Int      @default(1)
+  formulaDescription  String?
+  weights             Json?
+  active              Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model IdsRecord {
+  id              String   @id @default(uuid())
+  period          String   @unique
+  value           Float?
+  target          Float?
+  classification  String?
+  weightsSnapshot Json?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([period])
+}
+
+// ---------------------------------------------------------------------------
+// SYSTEM
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id        String            @id @default(uuid())
+  userId    String
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  message   String
+  link      String?
+  read      Boolean           @default(false)
+  createdAt DateTime          @default(now())
+
+  @@index([userId, read])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String
+  module     String
+  recordId   String?
+  details    Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@index([module])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Attachment {
+  id               String   @id @default(uuid())
+  module           String
+  recordId         String
+  fileName         String
+  storedFileName   String
+  mimeType         String
+  size             Int
+  uploadedById     String
+  uploadedBy       User     @relation(fields: [uploadedById], references: [id])
+  createdAt        DateTime @default(now())
+
+  ritualId               String?
+  ritual                 Ritual?               @relation(fields: [ritualId], references: [id], onDelete: Cascade)
+  ddsId                  String?
+  dds                    Dds?                  @relation(fields: [ddsId], references: [id], onDelete: Cascade)
+  inspectionId           String?
+  inspection             Inspection?           @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  deviationId            String?
+  deviation              Deviation?            @relation(fields: [deviationId], references: [id], onDelete: Cascade)
+  incidentId             String?
+  incident               Incident?             @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  refusalRightId         String?
+  refusalRight           RefusalRight?         @relation(fields: [refusalRightId], references: [id], onDelete: Cascade)
+  managerialInspectionId String?
+  managerialInspection   ManagerialInspection? @relation(fields: [managerialInspectionId], references: [id], onDelete: Cascade)
+  actionPlanId           String?
+  actionPlan             ActionPlan?           @relation(fields: [actionPlanId], references: [id], onDelete: Cascade)
+
+  @@index([module, recordId])
+}
