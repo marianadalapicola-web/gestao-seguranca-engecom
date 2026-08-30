@@ -1,3 +1,5 @@
+import path from 'path';
+import fs from 'fs';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -66,6 +68,19 @@ app.use('/api/attachments', attachmentsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/search', searchRoutes);
+
+// In production this single service also serves the built React app, so
+// only one deployable unit (+ Postgres) is needed. In development the
+// frontend runs on its own Vite dev server (port 5173) instead — this
+// block is a no-op there.
+const webDistPath = path.resolve(__dirname, '../../web/dist');
+if (env.isProduction && fs.existsSync(webDistPath)) {
+  app.use(express.static(webDistPath));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/')) return next();
+    res.sendFile(path.join(webDistPath, 'index.html'));
+  });
+}
 
 app.use(notFoundHandler);
 app.use(errorHandler);

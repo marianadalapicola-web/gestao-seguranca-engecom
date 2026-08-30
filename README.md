@@ -4,6 +4,9 @@ Sistema corporativo de Gestão de Segurança do Trabalho da ENGECOM. Aplicação
 banco de dados, autenticação, permissões aplicadas no backend, cálculos, formulários,
 filtros, dashboards e auditoria — não é um protótipo visual.
 
+Quer colocar o sistema no ar? Veja **[DEPLOY.md](./DEPLOY.md)** — passo a passo para
+publicar no Railway (ou Render) usando o `Dockerfile` já incluído neste repositório.
+
 ## Stack
 
 - **Backend**: Node.js + TypeScript + Express + Prisma ORM + PostgreSQL. JWT (access +
