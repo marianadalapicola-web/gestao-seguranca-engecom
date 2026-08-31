@@ -5,7 +5,9 @@ banco de dados, autenticação, permissões aplicadas no backend, cálculos, for
 filtros, dashboards e auditoria — não é um protótipo visual.
 
 Quer colocar o sistema no ar? Veja **[DEPLOY.md](./DEPLOY.md)** — passo a passo para
-publicar no Railway (ou Render) usando o `Dockerfile` já incluído neste repositório.
+publicar o backend (API + Postgres) no Railway (ou Render) usando o `Dockerfile` já
+incluído neste repositório. Para publicar o frontend na Vercel (mantendo esse backend
+separado), veja **[VERCEL_DEPLOY.md](./VERCEL_DEPLOY.md)**.
 
 ## Stack
 

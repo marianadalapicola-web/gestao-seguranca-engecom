@@ -1,7 +1,14 @@
 import axios, { AxiosError } from 'axios';
 
+// Same-origin deployments (the Vite dev proxy, or the API also serving the
+// built frontend, e.g. the Railway single-service setup) work with a plain
+// relative '/api'. A frontend hosted separately from the API (e.g. this app
+// on Vercel, the API on Railway/Render) must set VITE_API_URL to the API's
+// full public URL at build time.
+const baseURL = import.meta.env.VITE_API_URL || '/api';
+
 export const api = axios.create({
-  baseURL: '/api',
+  baseURL,
   withCredentials: true,
 });
 

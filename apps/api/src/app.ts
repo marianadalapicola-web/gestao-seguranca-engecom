@@ -35,7 +35,11 @@ app.set('trust proxy', 1);
 app.use(helmet());
 app.use(
   cors({
-    origin: env.webAppUrl,
+    origin(origin, callback) {
+      // Same-origin requests (curl, server-to-server, the single-service
+      // Railway deployment) send no Origin header at all — always allow.
+      callback(null, !origin || env.webAppUrls.includes(origin));
+    },
     credentials: true,
   })
 );

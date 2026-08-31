@@ -4,8 +4,12 @@ import { parseDurationToMs } from '../../utils/tokens';
 
 const baseCookieOptions = {
   httpOnly: true,
-  secure: env.isProduction,
-  sameSite: 'lax' as const,
+  // sameSite: 'none' is only ever honored by browsers over HTTPS, so force
+  // `secure` on whenever it's configured — a cross-origin deployment
+  // (frontend on Vercel, API elsewhere) needs both together or the cookie
+  // is silently rejected.
+  secure: env.isProduction || env.cookieSameSite === 'none',
+  sameSite: env.cookieSameSite,
   domain: env.cookieDomain,
   path: '/',
 };
