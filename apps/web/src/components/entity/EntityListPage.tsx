@@ -18,6 +18,7 @@ import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { EntityForm, validateFields, type FormValues, type FormErrors } from './EntityForm';
 import { AttachmentsPanel } from './AttachmentsPanel';
 import type { ModuleConfig } from './types';
+import { NAV_ITEMS } from '../../routes/navigation';
 
 export function EntityListPage<T extends { id: string }>({ config }: { config: ModuleConfig<T> }) {
   const { can } = useAuth();
@@ -28,6 +29,7 @@ export function EntityListPage<T extends { id: string }>({ config }: { config: M
   const canCreate = can(config.key, 'create');
   const canUpdate = can(config.key, 'update');
   const canDelete = can(config.key, 'delete');
+  const ModuleIcon = NAV_ITEMS.find((item) => item.module === config.key)?.icon;
 
   const table = useServerTable<T>({
     queryKey: config.apiPath,
@@ -198,6 +200,7 @@ export function EntityListPage<T extends { id: string }>({ config }: { config: M
         <CardHeader
           title={config.title}
           subtitle={config.subtitle}
+          icon={ModuleIcon && <ModuleIcon size={17} />}
           actions={
             canCreate && (
               <Button onClick={openCreate}>

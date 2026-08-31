@@ -3,11 +3,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShieldCheck, Eye, EyeOff, LogIn } from 'lucide-react';
+import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Field } from '../../components/ui/Field';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
+import { AuthLogo } from './AuthLogo';
 
 const schema = z.object({
   email: z.string().min(1, 'Informe o e-mail.').email('Informe um e-mail válido.'),
@@ -41,18 +42,11 @@ export function LoginPage() {
 
   return (
     <div className="min-h-screen flex">
-      <div className="hidden lg:flex lg:w-1/2 bg-[var(--color-brand-900)] text-white flex-col justify-between p-12 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 brand-gradient text-white flex-col justify-between p-12 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, white 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
-        <div className="relative flex items-center gap-3">
-          <div className="w-11 h-11 rounded-lg bg-[var(--color-brand-600)] flex items-center justify-center">
-            <ShieldCheck size={24} />
-          </div>
-          <div>
-            <p className="font-semibold leading-tight">ENGECOM</p>
-            <p className="text-sm text-[var(--color-brand-200)] leading-tight">Gestão de Segurança</p>
-          </div>
-        </div>
+        <img src="/logo-engecom.png" alt="ENGECOM" className="relative h-10 w-auto" />
         <div className="relative max-w-md">
+          <div className="h-1 w-14 safety-stripe rounded-full mb-5" />
           <h1 className="text-3xl font-semibold leading-tight mb-4">
             Segurança do trabalho, centralizada e sob controle.
           </h1>
@@ -66,14 +60,8 @@ export function LoginPage() {
 
       <div className="flex-1 flex items-center justify-center p-6 sm:p-10 bg-[var(--color-surface)]">
         <div className="w-full max-w-sm">
-          <div className="lg:hidden flex items-center gap-2.5 mb-8">
-            <div className="w-9 h-9 rounded-md bg-[var(--color-brand-800)] flex items-center justify-center">
-              <ShieldCheck size={20} className="text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-[var(--color-ink-900)] leading-tight">ENGECOM</p>
-              <p className="text-xs text-[var(--color-ink-500)] leading-tight">Gestão de Segurança</p>
-            </div>
+          <div className="lg:hidden">
+            <AuthLogo />
           </div>
 
           <h2 className="text-xl font-semibold text-[var(--color-ink-900)] mb-1">Entrar</h2>

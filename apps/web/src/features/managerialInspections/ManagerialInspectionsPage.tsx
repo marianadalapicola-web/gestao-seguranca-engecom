@@ -7,6 +7,7 @@ import { useServerTable } from '../../hooks/useServerTable';
 import { useSectors } from '../../hooks/useReferenceData';
 import { getApiErrorMessage } from '../../lib/api';
 import { formatDate } from '../../lib/format';
+import { ClipboardList } from 'lucide-react';
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { DataTable, type Column } from '../../components/ui/DataTable';
@@ -170,6 +171,7 @@ export function ManagerialInspectionsPage() {
         <CardHeader
           title="Inspeção Gerencial / Cruzada"
           subtitle="Checklists com pontuação ponderada e classificação automática."
+          icon={<ClipboardList size={17} />}
           actions={
             canCreate && (
               <Button onClick={openCreate}>

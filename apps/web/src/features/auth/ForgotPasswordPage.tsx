@@ -3,11 +3,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { api, getApiErrorMessage } from '../../lib/api';
 import { Field } from '../../components/ui/Field';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
+import { AuthLogo } from './AuthLogo';
 
 const schema = z.object({ email: z.string().email('Informe um e-mail válido.') });
 type FormValues = z.infer<typeof schema>;
@@ -37,15 +38,7 @@ export function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--color-surface)] p-6">
       <div className="w-full max-w-sm">
-        <div className="flex items-center gap-2.5 mb-8">
-          <div className="w-9 h-9 rounded-md bg-[var(--color-brand-800)] flex items-center justify-center">
-            <ShieldCheck size={20} className="text-white" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-[var(--color-ink-900)] leading-tight">ENGECOM</p>
-            <p className="text-xs text-[var(--color-ink-500)] leading-tight">Gestão de Segurança</p>
-          </div>
-        </div>
+        <AuthLogo />
 
         <h2 className="text-xl font-semibold text-[var(--color-ink-900)] mb-1">Redefinir senha</h2>
         <p className="text-sm text-[var(--color-ink-500)] mb-6">

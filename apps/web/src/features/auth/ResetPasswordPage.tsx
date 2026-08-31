@@ -3,11 +3,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ShieldCheck } from 'lucide-react';
 import { api, getApiErrorMessage } from '../../lib/api';
 import { Field } from '../../components/ui/Field';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
+import { AuthLogo } from './AuthLogo';
 
 const schema = z
   .object({
@@ -49,15 +49,7 @@ export function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--color-surface)] p-6">
       <div className="w-full max-w-sm">
-        <div className="flex items-center gap-2.5 mb-8">
-          <div className="w-9 h-9 rounded-md bg-[var(--color-brand-800)] flex items-center justify-center">
-            <ShieldCheck size={20} className="text-white" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-[var(--color-ink-900)] leading-tight">ENGECOM</p>
-            <p className="text-xs text-[var(--color-ink-500)] leading-tight">Gestão de Segurança</p>
-          </div>
-        </div>
+        <AuthLogo />
 
         <h2 className="text-xl font-semibold text-[var(--color-ink-900)] mb-1">Definir nova senha</h2>
         <p className="text-sm text-[var(--color-ink-500)] mb-6">Escolha uma nova senha para sua conta.</p>

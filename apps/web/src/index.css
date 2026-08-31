@@ -3,29 +3,38 @@
 @theme {
   --font-sans: "Segoe UI", ui-sans-serif, system-ui, Roboto, Helvetica, Arial, sans-serif;
 
-  /* ENGECOM — identidade visual: azul-marinho industrial + neutros técnicos */
-  --color-brand-950: #061527;
-  --color-brand-900: #0a1f38;
-  --color-brand-800: #0f2a4a;
-  --color-brand-700: #133a63;
-  --color-brand-600: #17497e;
-  --color-brand-500: #1f5fa3;
-  --color-brand-400: #3b7fc4;
-  --color-brand-300: #7aa9db;
-  --color-brand-200: #b6d0ec;
-  --color-brand-100: #e1edf9;
-  --color-brand-50: #f2f7fc;
+  /* ENGECOM — identidade visual: azul industrial de segurança + neutros técnicos.
+     A marca da empresa é azul; a paleta aqui aprofunda esse azul para um tom mais
+     "sala de controle / EPI" e usa um amarelo de sinalização (--color-safety-*)
+     como acento de assinatura, sempre discreto (nunca como cor dominante). */
+  --color-brand-950: #050f1f;
+  --color-brand-900: #081c34;
+  --color-brand-800: #0c2947;
+  --color-brand-700: #113a63;
+  --color-brand-600: #164b81;
+  --color-brand-500: #1c60a8;
+  --color-brand-400: #3680c9;
+  --color-brand-300: #74a9dd;
+  --color-brand-200: #b3d0ee;
+  --color-brand-100: #dfedfa;
+  --color-brand-50: #f1f7fd;
 
-  --color-surface: #f5f7fa;
-  --color-surface-alt: #eef1f6;
+  /* Amarelo de sinalização — usado só como traço/acento de assinatura da marca. */
+  --color-safety-600: #c98a06;
+  --color-safety-500: #eeab1e;
+  --color-safety-400: #f7c948;
+  --color-safety-100: #fdf1d3;
+
+  --color-surface: #f4f6f9;
+  --color-surface-alt: #eceff4;
   --color-card: #ffffff;
   --color-border: #e2e6ed;
   --color-border-strong: #cbd2dd;
 
-  --color-ink-900: #101828;
-  --color-ink-700: #344054;
-  --color-ink-500: #667085;
-  --color-ink-400: #98a2b3;
+  --color-ink-900: #0f1a2b;
+  --color-ink-700: #33415a;
+  --color-ink-500: #647087;
+  --color-ink-400: #97a2b5;
 
   --color-success-50: #ecfdf3;
   --color-success-600: #16a34a;
@@ -42,6 +51,9 @@
   --color-info-50: #eff6ff;
   --color-info-600: #2563eb;
   --color-info-700: #1d4ed8;
+
+  --shadow-card: 0 1px 2px rgba(15, 26, 43, 0.04), 0 1px 3px rgba(15, 26, 43, 0.06);
+  --shadow-elevated: 0 4px 12px rgba(8, 28, 52, 0.10), 0 2px 4px rgba(8, 28, 52, 0.06);
 }
 
 @layer base {
@@ -70,5 +82,21 @@
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background-color: var(--color-border-strong);
     border-radius: 9999px;
+  }
+
+  /* Assinatura visual discreta: um traço de sinalização em degradê, usado como
+     acento pontual (topo da sidebar, painel de login) — nunca como preenchimento. */
+  .safety-stripe {
+    background: linear-gradient(
+      90deg,
+      var(--color-safety-500) 0%,
+      var(--color-safety-400) 35%,
+      var(--color-brand-400) 70%,
+      var(--color-brand-300) 100%
+    );
+  }
+
+  .brand-gradient {
+    background: radial-gradient(120% 140% at 0% 0%, var(--color-brand-800) 0%, var(--color-brand-900) 55%, var(--color-brand-950) 100%);
   }
 }
