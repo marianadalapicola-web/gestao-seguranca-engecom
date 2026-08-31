@@ -73,6 +73,20 @@ O Railway builda a imagem Docker e, ao subir, o próprio container executa nesta
 Acesse a URL gerada, entre com o e-mail/senha definidos em `ADMIN_SEED_EMAIL` /
 `ADMIN_SEED_PASSWORD` e troque a senha pela tela **Meu Perfil** assim que possível.
 
+## Solução de problemas
+
+**Build falha em "Build image" sem detalhes.** Confirme, no serviço do Railway, em
+**Settings → Source**, que o **Root Directory está vazio/`/`** (raiz do repositório) —
+se estiver apontando para `apps/api` ou `apps/web`, o Railway não encontra o
+`Dockerfile` da raiz e tenta detectar o build sozinho, o que falha nesse monorepo.
+Confirme também em **Settings → Build** que o builder está como **Dockerfile**
+(o `railway.json` já configura isso, mas um serviço criado antes desse arquivo existir
+pode ter ficado com Nixpacks selecionado manualmente).
+
+Se o build passar mas o container reiniciar em loop logo depois, veja os *Deploy Logs*
+(não os *Build Logs*) — geralmente é `DATABASE_URL` ausente/errada ou as migrations
+ainda não tendo sido aplicadas.
+
 ## Alternativa: Render
 
 O mesmo `Dockerfile` funciona no Render:
