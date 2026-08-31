@@ -104,22 +104,26 @@ export const PERMISSIONS: Record<Role, RoleMatrix> = {
     users: NONE,
     audit: NONE,
     config: NONE,
-    sites: READ_ONLY,
-    sectors: READ_ONLY,
+    // CRU (não apenas leitura) para que o técnico possa digitar uma nova
+    // obra/setor diretamente nos formulários de registro, sem precisar
+    // cadastrá-la antes em Configurações — ver components/ui/Combobox.tsx.
+    sites: CRU,
+    sectors: CRU,
     attachments: CRU,
     search: READ_ONLY,
     leadershipRanking: READ_ONLY,
   },
 
-  // Perfil 4 — Liderança: interface simplificada, somente módulos
-  // necessários para a atuação da liderança.
+  // Perfil 4 — Liderança: acesso restrito a cadastrar apenas Inspeções e
+  // Desvios; os demais registros operacionais (DDS, Rituais) ficam somente
+  // leitura para a liderança.
   LEADERSHIP: {
     dashboard: READ_ONLY,
     ids: READ_ONLY,
-    rituals: CRU,
-    dds: CRU,
-    inspections: NONE,
-    deviations: NONE,
+    rituals: READ_ONLY,
+    dds: READ_ONLY,
+    inspections: CRU,
+    deviations: CRU,
     incidents: NONE,
     refusalRights: NONE,
     managerialInspections: NONE,
@@ -130,9 +134,11 @@ export const PERMISSIONS: Record<Role, RoleMatrix> = {
     users: NONE,
     audit: NONE,
     config: NONE,
-    sites: READ_ONLY,
-    sectors: READ_ONLY,
-    attachments: READ_ONLY,
+    // CRU para permitir digitar uma nova obra/setor direto no formulário
+    // de Inspeções/Desvios — ver components/ui/Combobox.tsx no frontend.
+    sites: CRU,
+    sectors: CRU,
+    attachments: CRU,
     search: READ_ONLY,
     leadershipRanking: READ_ONLY,
   },

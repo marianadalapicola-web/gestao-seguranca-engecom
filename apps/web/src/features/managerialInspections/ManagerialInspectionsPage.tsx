@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useServerTable } from '../../hooks/useServerTable';
 import { useSectors } from '../../hooks/useReferenceData';
-import { getApiErrorMessage } from '../../lib/api';
+import { api, getApiErrorMessage } from '../../lib/api';
 import { formatDate } from '../../lib/format';
 import { ClipboardList } from 'lucide-react';
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
@@ -17,7 +17,7 @@ import { Modal } from '../../components/ui/Modal';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { Field } from '../../components/ui/Field';
 import { Input, Textarea } from '../../components/ui/Input';
-import { Select } from '../../components/ui/Input';
+import { Combobox } from '../../components/ui/Combobox';
 import { Badge } from '../../components/ui/Badge';
 import { AttachmentsPanel } from '../../components/entity/AttachmentsPanel';
 import { ChecklistEditor } from './ChecklistEditor';
@@ -68,6 +68,14 @@ export function ManagerialInspectionsPage() {
   });
 
   const { data: sectors } = useSectors();
+
+  const createSector = useMutation({
+    mutationFn: async (name: string) => {
+      const { data } = await api.post('/sectors', { name });
+      queryClient.invalidateQueries({ queryKey: ['reference', 'sectors'] });
+      return { id: data.sector.id, name: data.sector.name };
+    },
+  });
 
   const [modalOpen, setModalOpen] = useState(false);
   const [mode, setMode] = useState<'create' | 'edit' | 'view'>('create');
@@ -234,12 +242,14 @@ export function ManagerialInspectionsPage() {
               <Input value={form.team} disabled={mode === 'view'} placeholder="Membros da equipe" onChange={(e) => setForm({ ...form, team: e.target.value })} />
             </Field>
             <Field label="Setor">
-              <Select value={form.sectorId} disabled={mode === 'view'} onChange={(e) => setForm({ ...form, sectorId: e.target.value })}>
-                <option value="">Selecione...</option>
-                {sectors?.map((s) => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </Select>
+              <Combobox
+                value={form.sectorId}
+                disabled={mode === 'view'}
+                options={sectors ?? []}
+                onSelect={(id) => setForm({ ...form, sectorId: id })}
+                onCreate={(name) => createSector.mutateAsync(name)}
+                placeholder="Digite ou selecione o setor..."
+              />
             </Field>
           </div>
 

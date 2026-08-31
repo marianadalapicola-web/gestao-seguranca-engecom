@@ -1,6 +1,9 @@
 import clsx from 'clsx';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Field } from '../ui/Field';
 import { Input, Select, Textarea } from '../ui/Input';
+import { Combobox } from '../ui/Combobox';
+import { api } from '../../lib/api';
 import { useSectors, useSites, useUsersDirectory } from '../../hooks/useReferenceData';
 import type { FieldConfig } from './types';
 
@@ -38,6 +41,23 @@ export function EntityForm({
   const { data: sites } = useSites();
   const { data: sectors } = useSectors(values.siteId || undefined);
   const { data: users } = useUsersDirectory();
+  const queryClient = useQueryClient();
+
+  const createSite = useMutation({
+    mutationFn: async (name: string) => {
+      const { data } = await api.post('/sites', { name });
+      queryClient.invalidateQueries({ queryKey: ['reference', 'sites'] });
+      return { id: data.site.id, name: data.site.name };
+    },
+  });
+
+  const createSector = useMutation({
+    mutationFn: async (name: string) => {
+      const { data } = await api.post('/sectors', { name, siteId: values.siteId || undefined });
+      queryClient.invalidateQueries({ queryKey: ['reference', 'sectors'] });
+      return { id: data.sector.id, name: data.sector.name };
+    },
+  });
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -72,25 +92,25 @@ export function EntityForm({
           );
         } else if (field.type === 'site') {
           control = (
-            <Select {...commonProps} value={values[field.name] ?? ''} onChange={(e) => onChange(field.name, e.target.value)}>
-              <option value="">Selecione a obra/unidade...</option>
-              {sites?.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </Select>
+            <Combobox
+              {...commonProps}
+              value={values[field.name] ?? ''}
+              options={sites ?? []}
+              onSelect={(id) => onChange(field.name, id)}
+              onCreate={(name) => createSite.mutateAsync(name)}
+              placeholder="Digite ou selecione a obra/unidade..."
+            />
           );
         } else if (field.type === 'sector') {
           control = (
-            <Select {...commonProps} value={values[field.name] ?? ''} onChange={(e) => onChange(field.name, e.target.value)}>
-              <option value="">Selecione o setor...</option>
-              {sectors?.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </Select>
+            <Combobox
+              {...commonProps}
+              value={values[field.name] ?? ''}
+              options={sectors ?? []}
+              onSelect={(id) => onChange(field.name, id)}
+              onCreate={(name) => createSector.mutateAsync(name)}
+              placeholder="Digite ou selecione o setor..."
+            />
           );
         } else if (field.type === 'user') {
           const filtered = field.userRoleFilter ? users?.filter((u) => field.userRoleFilter!.includes(u.role)) : users;
