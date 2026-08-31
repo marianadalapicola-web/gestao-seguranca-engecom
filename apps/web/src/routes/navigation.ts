@@ -15,6 +15,7 @@ import {
   UserCog,
   History,
   Settings,
+  Trophy,
   type LucideIcon,
 } from 'lucide-react';
 import type { ModuleKey } from '../types';
@@ -38,6 +39,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Inspeção Gerencial/Cruzada', path: '/inspecao-gerencial', module: 'managerialInspections', icon: ClipboardList },
   { label: 'Planos de Ação', path: '/planos-de-acao', module: 'actionPlans', icon: ListChecks },
   { label: 'Indicadores', path: '/indicadores', module: 'indicators', icon: BarChart3 },
+  { label: 'Ranking de Liderança', path: '/ranking-lideranca', module: 'leadershipRanking', icon: Trophy },
   { label: 'Relatórios', path: '/relatorios', module: 'reports', icon: FileText },
   { label: 'Notificações', path: '/notificacoes', module: 'notifications', icon: Bell },
   { label: 'Usuários', path: '/usuarios', module: 'users', icon: UserCog },

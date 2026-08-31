@@ -21,6 +21,8 @@ import { RefusalRightsPage } from './features/refusalRights/RefusalRightsPage';
 import { ManagerialInspectionsPage } from './features/managerialInspections/ManagerialInspectionsPage';
 import { ActionPlansPage } from './features/actionPlans/ActionPlansPage';
 import { IndicatorsPage } from './features/indicators/IndicatorsPage';
+import { LeadershipRankingPage } from './features/leadershipRanking/LeadershipRankingPage';
+import { LeaderDetailPage } from './features/leadershipRanking/LeaderDetailPage';
 import { ReportsPage } from './features/reports/ReportsPage';
 import { NotificationsPage } from './features/notifications/NotificationsPage';
 import { UsersPage } from './features/users/UsersPage';
@@ -72,6 +74,22 @@ function App() {
                 />
                 <Route path="planos-de-acao" element={<RequirePermission module="actionPlans"><ActionPlansPage /></RequirePermission>} />
                 <Route path="indicadores" element={<RequirePermission module="indicators"><IndicatorsPage /></RequirePermission>} />
+                <Route
+                  path="ranking-lideranca"
+                  element={
+                    <RequirePermission module="leadershipRanking">
+                      <LeadershipRankingPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="ranking-lideranca/:userId"
+                  element={
+                    <RequirePermission module="leadershipRanking">
+                      <LeaderDetailPage />
+                    </RequirePermission>
+                  }
+                />
                 <Route path="relatorios" element={<RequirePermission module="reports"><ReportsPage /></RequirePermission>} />
                 <Route path="notificacoes" element={<NotificationsPage />} />
                 <Route path="usuarios" element={<RequirePermission module="users"><UsersPage /></RequirePermission>} />

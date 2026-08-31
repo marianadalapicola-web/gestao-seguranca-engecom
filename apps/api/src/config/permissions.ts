@@ -32,7 +32,8 @@ export type Module =
   | 'sites'
   | 'sectors'
   | 'attachments'
-  | 'search';
+  | 'search'
+  | 'leadershipRanking';
 
 export type Action = 'create' | 'read' | 'update' | 'delete';
 
@@ -67,6 +68,7 @@ function full(): RoleMatrix {
     sectors: ALL,
     attachments: ALL,
     search: ALL,
+    leadershipRanking: ALL,
   };
 }
 
@@ -106,6 +108,7 @@ export const PERMISSIONS: Record<Role, RoleMatrix> = {
     sectors: READ_ONLY,
     attachments: CRU,
     search: READ_ONLY,
+    leadershipRanking: READ_ONLY,
   },
 
   // Perfil 4 — Liderança: interface simplificada, somente módulos
@@ -131,6 +134,7 @@ export const PERMISSIONS: Record<Role, RoleMatrix> = {
     sectors: READ_ONLY,
     attachments: READ_ONLY,
     search: READ_ONLY,
+    leadershipRanking: READ_ONLY,
   },
 };
 

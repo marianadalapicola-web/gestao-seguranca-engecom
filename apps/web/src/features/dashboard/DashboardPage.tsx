@@ -16,9 +16,12 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useSites, useSectors, useUsersDirectory } from '../../hooks/useReferenceData';
 import { fetchDashboardBySector, fetchDashboardEvolution, fetchDashboardSummary, type DashboardFilters } from './api';
+import { fetchLeadershipRankingSummary } from '../leadershipRanking/api';
+import { classificationVariant, medalFor } from '../leadershipRanking/utils';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { StatCard } from '../../components/ui/StatCard';
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
+import { Badge } from '../../components/ui/Badge';
 import { FilterSelect } from '../../components/ui/FilterBar';
 import { Button } from '../../components/ui/Button';
 import { Spinner } from '../../components/ui/Spinner';
@@ -47,6 +50,12 @@ export function DashboardPage() {
   const sectorQuery = useQuery({
     queryKey: ['dashboard', 'by-sector', filters],
     queryFn: () => fetchDashboardBySector(filters),
+  });
+
+  const rankingSummaryQuery = useQuery({
+    queryKey: ['leadership-ranking', 'summary', 'dashboard'],
+    queryFn: () => fetchLeadershipRankingSummary({ period: 'month' }),
+    enabled: can('leadershipRanking', 'read'),
   });
 
   const sectorChartData = useMemo(
@@ -176,6 +185,56 @@ export function DashboardPage() {
           </CardBody>
         </Card>
       </div>
+
+      {can('leadershipRanking', 'read') && (
+        <Card>
+          <CardHeader
+            title="🏆 Ranking de Liderança"
+            subtitle="Top 3 lideranças do mês, com base em dados reais de segurança."
+            actions={
+              <Button variant="outline" size="sm" onClick={() => navigate('/ranking-lideranca')}>
+                Ver ranking completo
+              </Button>
+            }
+          />
+          <CardBody>
+            {rankingSummaryQuery.isLoading ? (
+              <Spinner />
+            ) : !rankingSummaryQuery.data?.hasSufficientData ? (
+              <p className="text-sm text-[var(--color-ink-500)] text-center py-6">
+                Ainda não existem dados suficientes para gerar o ranking deste período.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {rankingSummaryQuery.data.top.map((entry) => (
+                    <div
+                      key={entry.userId}
+                      className="flex items-center gap-3 rounded-lg border border-[var(--color-border)] p-3 cursor-pointer hover:bg-[var(--color-brand-50)]"
+                      onClick={() => navigate(`/ranking-lideranca/${entry.userId}`)}
+                    >
+                      <span className="text-2xl leading-none shrink-0">{medalFor(entry.position)}</span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-[var(--color-ink-900)] truncate">{entry.name}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-sm font-semibold text-[var(--color-brand-700)]">{entry.score}</span>
+                          <Badge variant={classificationVariant(entry.classification)}>{entry.classification}</Badge>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {rankingSummaryQuery.data.bestEvolution && (
+                  <p className="text-xs text-[var(--color-ink-500)]">
+                    Melhor evolução do período: <b className="text-[var(--color-ink-700)]">{rankingSummaryQuery.data.bestEvolution.name}</b>{' '}
+                    (+{rankingSummaryQuery.data.bestEvolution.delta} pontos)
+                  </p>
+                )}
+              </div>
+            )}
+          </CardBody>
+        </Card>
+      )}
     </div>
   );
 }

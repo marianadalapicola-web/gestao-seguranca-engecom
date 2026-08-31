@@ -4,7 +4,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { api, getApiErrorMessage } from '../../lib/api';
-import { useSites, useSectors } from '../../hooks/useReferenceData';
+import { useSites, useSectors, useUsersDirectory } from '../../hooks/useReferenceData';
 import { fetchIdsConfig, updateIdsConfig } from '../ids/api';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
@@ -81,15 +81,20 @@ function SectorsManager() {
   const queryClient = useQueryClient();
   const { data: sites } = useSites();
   const { data: sectors, isLoading } = useSectors();
+  const { data: users } = useUsersDirectory();
+  const leaders = (users ?? []).filter((u) => u.role === 'LEADERSHIP');
   const [name, setName] = useState('');
   const [siteId, setSiteId] = useState('');
+  const [leaderId, setLeaderId] = useState('');
   const canManage = can('sectors', 'create');
+  const canEdit = can('sectors', 'update');
 
   const createMutation = useMutation({
-    mutationFn: () => api.post('/sectors', { name, siteId: siteId || undefined }),
+    mutationFn: () => api.post('/sectors', { name, siteId: siteId || undefined, leaderId: leaderId || undefined }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reference', 'sectors'] });
       setName('');
+      setLeaderId('');
       showToast('Setor cadastrado.', 'success');
     },
     onError: (err) => showToast(getApiErrorMessage(err), 'error'),
@@ -104,9 +109,21 @@ function SectorsManager() {
     onError: (err) => showToast(getApiErrorMessage(err), 'error'),
   });
 
+  const leaderMutation = useMutation({
+    mutationFn: ({ id, leaderId }: { id: string; leaderId: string }) => api.patch(`/sectors/${id}`, { leaderId: leaderId || null }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reference', 'sectors'] });
+      showToast('Líder do setor atualizado.', 'success');
+    },
+    onError: (err) => showToast(getApiErrorMessage(err), 'error'),
+  });
+
   return (
     <Card>
-      <CardHeader title="Setores" subtitle="Setores vinculados às obras/unidades." />
+      <CardHeader
+        title="Setores"
+        subtitle="Setores vinculados às obras/unidades. O líder define a quem os indicadores da área são atribuídos no Ranking de Liderança."
+      />
       <CardBody className="flex flex-col gap-3">
         {canManage && (
           <div className="flex flex-col sm:flex-row gap-2">
@@ -115,6 +132,12 @@ function SectorsManager() {
               <option value="">Sem obra vinculada</option>
               {sites?.map((s) => (
                 <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </Select>
+            <Select value={leaderId} onChange={(e) => setLeaderId(e.target.value)} className="sm:w-48">
+              <option value="">Sem líder definido</option>
+              {leaders.map((l) => (
+                <option key={l.id} value={l.id}>{l.name}</option>
               ))}
             </Select>
             <Button onClick={() => name.trim() && createMutation.mutate()} loading={createMutation.isPending}>
@@ -127,13 +150,29 @@ function SectorsManager() {
         ) : (
           <ul className="flex flex-col divide-y divide-[var(--color-border)]">
             {(sectors ?? []).map((sector) => (
-              <li key={sector.id} className="flex items-center justify-between py-2 text-sm">
+              <li key={sector.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2 text-sm">
                 <span>{sector.name}</span>
-                {canManage && (
-                  <button onClick={() => deleteMutation.mutate(sector.id)} className="text-[var(--color-danger-600)] hover:text-[var(--color-danger-700)]">
-                    <Trash2 size={14} />
-                  </button>
-                )}
+                <div className="flex items-center gap-2">
+                  {canEdit ? (
+                    <Select
+                      value={sector.leader?.id ?? ''}
+                      onChange={(e) => leaderMutation.mutate({ id: sector.id, leaderId: e.target.value })}
+                      className="!py-1 text-xs sm:w-44"
+                    >
+                      <option value="">Sem líder definido</option>
+                      {leaders.map((l) => (
+                        <option key={l.id} value={l.id}>{l.name}</option>
+                      ))}
+                    </Select>
+                  ) : (
+                    <span className="text-xs text-[var(--color-ink-500)]">{sector.leader?.name ?? 'Sem líder definido'}</span>
+                  )}
+                  {canManage && (
+                    <button onClick={() => deleteMutation.mutate(sector.id)} className="text-[var(--color-danger-600)] hover:text-[var(--color-danger-700)]">
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                </div>
               </li>
             ))}
             {(sectors ?? []).length === 0 && <p className="text-sm text-[var(--color-ink-500)] py-2">Nenhum setor cadastrado.</p>}

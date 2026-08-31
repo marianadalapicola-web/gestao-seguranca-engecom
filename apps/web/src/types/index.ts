@@ -21,7 +21,8 @@ export type ModuleKey =
   | 'sites'
   | 'sectors'
   | 'attachments'
-  | 'search';
+  | 'search'
+  | 'leadershipRanking';
 
 export type Action = 'create' | 'read' | 'update' | 'delete';
 

@@ -4,6 +4,7 @@ import type { Role, SelectOption } from '../types';
 
 export interface SectorOption extends SelectOption {
   siteId: string | null;
+  leader?: { id: string; name: string } | null;
 }
 
 export interface DirectoryUser {

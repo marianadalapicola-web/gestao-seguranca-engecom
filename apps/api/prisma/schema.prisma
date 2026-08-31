@@ -120,6 +120,7 @@ model User {
   actionPlansCreated        ActionPlan[]            @relation("ActionPlanCreatedBy")
   indicatorsResponsible     Indicator[]             @relation("IndicatorResponsible")
   indicatorsCreated         Indicator[]             @relation("IndicatorCreatedBy")
+  sectorsLed                Sector[]                @relation("SectorLeader")
 
   @@index([role])
   @@index([status])
@@ -179,6 +180,12 @@ model Sector {
   active    Boolean   @default(true)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
+  // Líder/supervisor responsável pelo setor — usado pelo Ranking de Liderança
+  // para atribuir indicadores que não têm um "responsável" próprio (ex.:
+  // incidentes, inspeções gerenciais) à liderança da área.
+  leaderId  String?
+  leader    User?     @relation("SectorLeader", fields: [leaderId], references: [id], onDelete: SetNull)
 
   rituals                Ritual[]
   dds                    Dds[]
