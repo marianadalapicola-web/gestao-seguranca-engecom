@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, ChevronDown, User, LogOut } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { resolveAssetUrl } from '../../lib/api';
 import { NotificationBell } from './NotificationBell';
 import { GlobalSearch } from './GlobalSearch';
 
@@ -47,8 +48,12 @@ export function Topbar({ onOpenMobileMenu }: { onOpenMobileMenu: () => void }) {
             onClick={() => setMenuOpen((v) => !v)}
             className="flex items-center gap-2 pl-1.5 pr-1 sm:pr-2 py-1 rounded-md hover:bg-[var(--color-surface-alt)]"
           >
-            <div className="w-8 h-8 rounded-full bg-[var(--color-brand-700)] text-white text-xs font-semibold flex items-center justify-center shrink-0">
-              {initials}
+            <div className="w-8 h-8 rounded-full bg-[var(--color-brand-700)] text-white text-xs font-semibold flex items-center justify-center shrink-0 overflow-hidden">
+              {user?.avatarUrl ? (
+                <img src={resolveAssetUrl(user.avatarUrl)!} alt={user.name} className="w-full h-full object-cover" />
+              ) : (
+                initials
+              )}
             </div>
             <div className="hidden sm:block text-left min-w-0">
               <p className="text-xs font-medium text-[var(--color-ink-900)] truncate max-w-[140px]">{user?.name}</p>

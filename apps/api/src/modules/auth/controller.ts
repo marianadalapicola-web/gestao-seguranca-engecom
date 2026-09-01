@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { Request, Response } from 'express';
 import { prisma } from '../../lib/prisma';
 import { recordAudit } from '../../lib/audit';
@@ -5,6 +7,7 @@ import { asyncHandler } from '../../utils/asyncHandler';
 import { UnauthorizedError, ValidationError } from '../../utils/errors';
 import { getPermissionsForRole, ROLE_LABELS, Role } from '../../config/permissions';
 import { comparePassword, hashPassword, isStrongPassword } from '../../utils/password';
+import { AVATAR_UPLOAD_ROOT } from '../../lib/attachmentStorage';
 import { setAuthCookies, clearAuthCookies } from './cookies';
 import {
   authenticateUser,
@@ -146,6 +149,39 @@ export const updateProfile = asyncHandler(async (req: Request, res: Response) =>
   });
 
   await recordAudit({ userId: user.id, action: 'UPDATE', module: 'profile', recordId: user.id, req });
+
+  res.json({ user: serializeUser(user) });
+});
+
+// Só removemos o arquivo antigo se ele mora no nosso próprio diretório de
+// avatares — nunca tentar apagar uma URL externa hipotética.
+function unlinkAvatarFile(avatarUrl: string | null | undefined) {
+  if (!avatarUrl) return;
+  const match = avatarUrl.match(/^\/api\/avatars\/([^/]+)$/);
+  if (!match) return;
+  fs.unlink(path.join(AVATAR_UPLOAD_ROOT, match[1]), () => undefined);
+}
+
+export const uploadAvatar = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.file) throw new ValidationError('Nenhuma imagem enviada.');
+
+  const previous = await prisma.user.findUniqueOrThrow({ where: { id: req.user!.id } });
+
+  const avatarUrl = `/api/avatars/${req.file.filename}`;
+  const user = await prisma.user.update({ where: { id: req.user!.id }, data: { avatarUrl } });
+  unlinkAvatarFile(previous.avatarUrl);
+
+  await recordAudit({ userId: user.id, action: 'UPDATE', module: 'profile', recordId: user.id, req, details: { avatar: 'uploaded' } });
+
+  res.json({ user: serializeUser(user) });
+});
+
+export const removeAvatar = asyncHandler(async (req: Request, res: Response) => {
+  const previous = await prisma.user.findUniqueOrThrow({ where: { id: req.user!.id } });
+  const user = await prisma.user.update({ where: { id: req.user!.id }, data: { avatarUrl: null } });
+  unlinkAvatarFile(previous.avatarUrl);
+
+  await recordAudit({ userId: user.id, action: 'UPDATE', module: 'profile', recordId: user.id, req, details: { avatar: 'removed' } });
 
   res.json({ user: serializeUser(user) });
 });

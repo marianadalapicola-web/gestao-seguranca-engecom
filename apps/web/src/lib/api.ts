@@ -53,6 +53,17 @@ api.interceptors.response.use(
   }
 );
 
+// Avatars (and other server-served static files) come back as API-relative
+// paths like "/api/avatars/<file>". In same-origin setups that's already a
+// valid URL; in a split-origin deployment (frontend on Vercel, API elsewhere)
+// it must be prefixed with the API's origin, derived from VITE_API_URL.
+const apiOrigin = (import.meta.env.VITE_API_URL || '').replace(/\/api\/?$/, '');
+
+export function resolveAssetUrl(assetPath: string | null | undefined): string | null {
+  if (!assetPath) return null;
+  return `${apiOrigin}${assetPath}`;
+}
+
 export interface ApiErrorShape {
   error: { code: string; message: string; details?: unknown };
 }
