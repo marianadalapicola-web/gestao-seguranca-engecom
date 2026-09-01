@@ -89,36 +89,14 @@ export const PERMISSIONS: Record<Role, RoleMatrix> = {
     config: READ_ONLY,
   },
 
-  // Perfil 3 — Técnico de Segurança: acesso operacional, sem exclusões
-  // e sem administração.
+  // Perfil 3 — Técnico de Segurança: mesmo nível de acesso da Engenheira de
+  // Segurança — tudo, EXCETO gestão de usuários, auditoria completa e
+  // configurações administrativas do sistema.
   SAFETY_TECHNICIAN: {
-    dashboard: READ_ONLY,
-    ids: READ_ONLY,
-    rituals: CRU,
-    dds: CRU,
-    inspections: CRU,
-    deviations: CRU,
-    incidents: READ_ONLY,
-    refusalRights: READ_ONLY,
-    managerialInspections: READ_ONLY,
-    actionPlans: CRU,
-    indicators: READ_ONLY,
-    reports: READ_ONLY,
-    notifications: RU,
+    ...full(),
     users: NONE,
     audit: NONE,
-    config: NONE,
-    // CRU (não apenas leitura) para que o técnico possa digitar uma nova
-    // obra/setor diretamente nos formulários de registro, sem precisar
-    // cadastrá-la antes em Configurações — ver components/ui/Combobox.tsx.
-    sites: CRU,
-    sectors: CRU,
-    attachments: CRU,
-    search: READ_ONLY,
-    leadershipRanking: READ_ONLY,
-    leaders: READ_ONLY,
-    // Técnico também pode lançar avaliações manuais dos líderes.
-    leaderEvaluations: CRU,
+    config: READ_ONLY,
   },
 
   // Perfil 4 — Liderança: acesso restrito a cadastrar apenas Inspeções e
