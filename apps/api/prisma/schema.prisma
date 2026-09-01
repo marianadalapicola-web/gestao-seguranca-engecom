@@ -88,8 +88,13 @@ enum NotificationType {
 model User {
   id           String     @id @default(uuid())
   name         String
-  email        String     @unique
-  passwordHash String
+  // Nulos para um líder cadastrado sem acesso ao sistema (hasSystemAccess
+  // = false) — ele existe como responsável/avaliado nos módulos, mas nunca
+  // recebe credenciais de login. Postgres permite múltiplos NULL num
+  // índice único, então vários líderes sem acesso podem coexistir.
+  email             String?    @unique
+  passwordHash      String?
+  hasSystemAccess   Boolean    @default(true)
   role         Role
   status       UserStatus @default(ACTIVE)
   position     String?
@@ -121,9 +126,32 @@ model User {
   indicatorsResponsible     Indicator[]             @relation("IndicatorResponsible")
   indicatorsCreated         Indicator[]             @relation("IndicatorCreatedBy")
   sectorsLed                Sector[]                @relation("SectorLeader")
+  evaluationsReceived       LeaderEvaluation[]      @relation("LeaderEvaluationLeader")
+  evaluationsAuthored       LeaderEvaluation[]      @relation("LeaderEvaluationAuthor")
 
   @@index([role])
   @@index([status])
+}
+
+// Avaliação manual e qualitativa de um líder, complementar à pontuação
+// automática do Ranking de Liderança (que vem de DDS/inspeções/desvios
+// reais). Registro histórico — cada avaliação é um lançamento datado, não
+// é editada depois, para preservar o histórico de acompanhamento.
+model LeaderEvaluation {
+  id                    String   @id @default(uuid())
+  leaderId              String
+  leader                User     @relation("LeaderEvaluationLeader", fields: [leaderId], references: [id], onDelete: Cascade)
+  evaluatorId           String
+  evaluator             User     @relation("LeaderEvaluationAuthor", fields: [evaluatorId], references: [id])
+  date                  DateTime @default(now())
+  leadershipScore       Int
+  communicationScore    Int
+  safetyCommitmentScore Int
+  notes                 String?
+  createdAt             DateTime @default(now())
+
+  @@index([leaderId])
+  @@index([date])
 }
 
 model RefreshToken {

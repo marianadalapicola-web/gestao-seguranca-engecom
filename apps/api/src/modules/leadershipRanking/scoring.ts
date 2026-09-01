@@ -3,12 +3,14 @@
  *
  * Pesos sugeridos pela ENGECOM (ajustáveis aqui se a empresa oficializar
  * outros valores — o restante do cálculo não precisa mudar):
- *   DDS realizados ............................. 20%
- *   Inspeções realizadas ........................ 20%
+ *   DDS realizados ............................. 15%
+ *   Inspeções realizadas ........................ 15%
  *   Desvios tratados (taxa de resolução) ........ 15%
- *   Planos de ação concluídos no prazo .......... 25%
+ *   Planos de ação concluídos no prazo .......... 20%
  *   Incidentes (quanto menos, melhor) ........... 10%
  *   Resultado geral das inspeções gerenciais .... 10%
+ *   Avaliação manual (liderança/comunicação/
+ *   comprometimento com segurança) .............. 15%
  *
  * Intencionalmente, "DDS" e "Inspeções" pontuam pela QUANTIDADE realizada
  * (normalizada contra o líder de melhor desempenho do período), enquanto
@@ -16,14 +18,20 @@
  * não pela quantidade de desvios abertos. Isso evita premiar quem apenas
  * registra mais desvios/incidentes, conforme pedido: a qualidade da gestão
  * conta mais do que o volume de ocorrências.
+ *
+ * "Avaliação manual" é o único componente subjetivo — vem de notas 0-10
+ * lançadas por um engenheiro/administrador (ver módulo leaders) — e por
+ * isso tem peso deliberadamente menor que a soma dos componentes objetivos,
+ * que continuam decidindo a maior parte da nota.
  */
 export const RANKING_WEIGHTS = {
-  dds: 0.2,
-  inspections: 0.2,
+  dds: 0.15,
+  inspections: 0.15,
   deviationsTreated: 0.15,
-  actionPlansOnTime: 0.25,
+  actionPlansOnTime: 0.2,
   incidents: 0.1,
   inspectionResult: 0.1,
+  manualEvaluation: 0.15,
 } as const;
 
 export type ScoreComponentKey = keyof typeof RANKING_WEIGHTS;

@@ -25,7 +25,8 @@ export type ScoreComponentKey =
   | 'deviationsTreated'
   | 'actionPlansOnTime'
   | 'incidents'
-  | 'inspectionResult';
+  | 'inspectionResult'
+  | 'manualEvaluation';
 
 export const SCORE_COMPONENT_LABELS: Record<ScoreComponentKey, string> = {
   dds: 'DDS realizados',
@@ -34,6 +35,7 @@ export const SCORE_COMPONENT_LABELS: Record<ScoreComponentKey, string> = {
   actionPlansOnTime: 'Planos de ação no prazo',
   incidents: 'Incidentes',
   inspectionResult: 'Resultado das inspeções gerenciais',
+  manualEvaluation: 'Avaliação manual',
 };
 
 export interface ScoreComponentView {
@@ -54,6 +56,8 @@ export interface LeaderMetrics {
   actionPlansOverdue: number;
   incidentsCount: number;
   managerialInspectionAvgPercentage: number | null;
+  manualEvaluationAvgPercentage: number | null;
+  manualEvaluationCount: number;
 }
 
 export interface LeaderRankingEntry {

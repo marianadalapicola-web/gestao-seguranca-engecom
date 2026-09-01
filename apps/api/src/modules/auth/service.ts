@@ -12,7 +12,7 @@ import { Role } from '../../config/permissions';
 
 export async function authenticateUser(email: string, password: string) {
   const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
-  if (!user) throw new UnauthorizedError('E-mail ou senha inválidos.');
+  if (!user || !user.passwordHash) throw new UnauthorizedError('E-mail ou senha inválidos.');
   if (user.status === 'BLOCKED') throw new UnauthorizedError('Usuário bloqueado. Contate o administrador.');
 
   const valid = await comparePassword(password, user.passwordHash);

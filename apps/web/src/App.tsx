@@ -23,6 +23,7 @@ import { ActionPlansPage } from './features/actionPlans/ActionPlansPage';
 import { IndicatorsPage } from './features/indicators/IndicatorsPage';
 import { LeadershipRankingPage } from './features/leadershipRanking/LeadershipRankingPage';
 import { LeaderDetailPage } from './features/leadershipRanking/LeaderDetailPage';
+import { LeadersPage } from './features/leaders/LeadersPage';
 import { ReportsPage } from './features/reports/ReportsPage';
 import { NotificationsPage } from './features/notifications/NotificationsPage';
 import { UsersPage } from './features/users/UsersPage';
@@ -90,6 +91,7 @@ function App() {
                     </RequirePermission>
                   }
                 />
+                <Route path="lideres" element={<RequirePermission module="leaders"><LeadersPage /></RequirePermission>} />
                 <Route path="relatorios" element={<RequirePermission module="reports"><ReportsPage /></RequirePermission>} />
                 <Route path="notificacoes" element={<NotificationsPage />} />
                 <Route path="usuarios" element={<RequirePermission module="users"><UsersPage /></RequirePermission>} />

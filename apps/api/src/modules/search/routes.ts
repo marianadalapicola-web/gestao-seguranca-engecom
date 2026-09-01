@@ -76,7 +76,7 @@ const SOURCES: SearchSource[] = [
         where: { OR: [{ name: { contains: term, mode: 'insensitive' } }, { email: { contains: term, mode: 'insensitive' } }] },
         take: 5,
       });
-      return items.map((i) => ({ id: i.id, title: i.name, subtitle: i.email, link: `/usuarios?open=${i.id}` }));
+      return items.map((i) => ({ id: i.id, title: i.name, subtitle: i.email ?? undefined, link: `/usuarios?open=${i.id}` }));
     },
   },
 ];

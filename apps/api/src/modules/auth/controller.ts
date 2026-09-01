@@ -18,7 +18,7 @@ import {
 function serializeUser(user: {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
   role: string;
   status: string;
   position: string | null;
@@ -119,7 +119,9 @@ export const changePassword = asyncHandler(async (req: Request, res: Response) =
   const { currentPassword, newPassword } = req.body;
   const user = await prisma.user.findUniqueOrThrow({ where: { id: req.user!.id } });
 
-  const valid = await comparePassword(currentPassword, user.passwordHash);
+  // A senha só pode ser trocada por quem já está autenticado, o que exige
+  // ter feito login com senha — logo passwordHash aqui nunca é nulo.
+  const valid = await comparePassword(currentPassword, user.passwordHash!);
   if (!valid) throw new ValidationError('Senha atual incorreta.');
   if (!isStrongPassword(newPassword)) {
     throw new ValidationError('A nova senha deve ter ao menos 8 caracteres, com letras e números.');

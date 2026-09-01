@@ -20,6 +20,8 @@ export interface LeaderMetrics {
   actionPlansOverdue: number;
   incidentsCount: number;
   managerialInspectionAvgPercentage: number | null;
+  manualEvaluationAvgPercentage: number | null;
+  manualEvaluationCount: number;
 }
 
 export interface ScoreComponentView {
@@ -96,7 +98,7 @@ async function gatherMetrics(leader: LeaderContext, filters: RankingFilters): Pr
   const scope = recordScope(filters);
   const dateRange = { gte: from, lte: to };
 
-  const [ddsCount, inspectionsCount, deviationsFound, deviationsResolved, actionPlans, incidentsCount, managerialInspections] =
+  const [ddsCount, inspectionsCount, deviationsFound, deviationsResolved, actionPlans, incidentsCount, managerialInspections, evaluations] =
     await Promise.all([
       prisma.dds.count({ where: { responsibleId: leader.id, date: dateRange, ...scope } }),
       prisma.inspection.count({ where: { responsibleId: leader.id, date: dateRange, ...scope } }),
@@ -115,6 +117,10 @@ async function gatherMetrics(leader: LeaderContext, filters: RankingFilters): Pr
             select: { percentage: true },
           })
         : Promise.resolve([]),
+      prisma.leaderEvaluation.findMany({
+        where: { leaderId: leader.id, date: dateRange },
+        select: { leadershipScore: true, communicationScore: true, safetyCommitmentScore: true },
+      }),
     ]);
 
   const actionPlansDue = actionPlans.length;
@@ -126,6 +132,18 @@ async function gatherMetrics(leader: LeaderContext, filters: RankingFilters): Pr
   const managerialInspectionAvgPercentage =
     managerialInspections.length > 0
       ? Math.round((managerialInspections.reduce((sum, m) => sum + m.percentage, 0) / managerialInspections.length) * 100) / 100
+      : null;
+
+  // Cada avaliação lança 3 notas de 0 a 10; a média das três vira um
+  // percentual (0-100) por avaliação, e depois tiramos a média de todas as
+  // avaliações lançadas dentro do período filtrado.
+  const manualEvaluationAvgPercentage =
+    evaluations.length > 0
+      ? Math.round(
+          (evaluations.reduce((sum, e) => sum + ((e.leadershipScore + e.communicationScore + e.safetyCommitmentScore) / 3) * 10, 0) /
+            evaluations.length) *
+            100
+        ) / 100
       : null;
 
   return {
@@ -140,6 +158,8 @@ async function gatherMetrics(leader: LeaderContext, filters: RankingFilters): Pr
     actionPlansOverdue,
     incidentsCount,
     managerialInspectionAvgPercentage,
+    manualEvaluationAvgPercentage,
+    manualEvaluationCount: evaluations.length,
   };
 }
 
@@ -175,6 +195,11 @@ function buildScoreBreakdown(
       raw: metrics.managerialInspectionAvgPercentage,
       score: metrics.managerialInspectionAvgPercentage,
       weight: RANKING_WEIGHTS.inspectionResult,
+    },
+    manualEvaluation: {
+      raw: metrics.manualEvaluationAvgPercentage,
+      score: metrics.manualEvaluationAvgPercentage,
+      weight: RANKING_WEIGHTS.manualEvaluation,
     },
   };
 }
@@ -223,7 +248,8 @@ function hasActivity(entry: LeaderRankingEntry): boolean {
     m.deviationsFound > 0 ||
     m.actionPlansDue > 0 ||
     m.incidentsCount > 0 ||
-    m.managerialInspectionAvgPercentage !== null
+    m.managerialInspectionAvgPercentage !== null ||
+    m.manualEvaluationCount > 0
   );
 }
 

@@ -22,7 +22,9 @@ export type ModuleKey =
   | 'sectors'
   | 'attachments'
   | 'search'
-  | 'leadershipRanking';
+  | 'leadershipRanking'
+  | 'leaders'
+  | 'leaderEvaluations';
 
 export type Action = 'create' | 'read' | 'update' | 'delete';
 

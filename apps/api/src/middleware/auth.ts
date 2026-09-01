@@ -8,7 +8,7 @@ export interface AuthenticatedUser {
   id: string;
   role: Role;
   name: string;
-  email: string;
+  email: string | null;
   status: 'ACTIVE' | 'BLOCKED';
 }
 

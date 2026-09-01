@@ -29,6 +29,7 @@ import dashboardRoutes from './modules/dashboard/routes';
 import reportsRoutes from './modules/reports/routes';
 import searchRoutes from './modules/search/routes';
 import leadershipRankingRoutes from './modules/leadershipRanking/routes';
+import leadersRoutes from './modules/leaders/routes';
 
 export const app = express();
 
@@ -74,6 +75,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/leadership-ranking', leadershipRankingRoutes);
+app.use('/api/leaders', leadersRoutes);
 
 // In production this single service also serves the built React app, so
 // only one deployable unit (+ Postgres) is needed. In development the

@@ -36,6 +36,7 @@ const COMPARE_METRICS: Array<{ key: ScoreComponentKey; format: (e: LeaderRanking
   { key: 'actionPlansOnTime', format: (e) => `${e.metrics.actionPlansOnTimeRate}% (${e.metrics.actionPlansOnTime}/${e.metrics.actionPlansDue})` },
   { key: 'incidents', format: (e) => String(e.metrics.incidentsCount) },
   { key: 'inspectionResult', format: (e) => (e.metrics.managerialInspectionAvgPercentage !== null ? `${e.metrics.managerialInspectionAvgPercentage}%` : '—') },
+  { key: 'manualEvaluation', format: (e) => (e.metrics.manualEvaluationAvgPercentage !== null ? `${e.metrics.manualEvaluationAvgPercentage}%` : '—') },
 ];
 
 export function LeadershipRankingPage() {

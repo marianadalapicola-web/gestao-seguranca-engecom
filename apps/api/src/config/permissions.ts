@@ -33,7 +33,9 @@ export type Module =
   | 'sectors'
   | 'attachments'
   | 'search'
-  | 'leadershipRanking';
+  | 'leadershipRanking'
+  | 'leaders'
+  | 'leaderEvaluations';
 
 export type Action = 'create' | 'read' | 'update' | 'delete';
 
@@ -69,6 +71,8 @@ function full(): RoleMatrix {
     attachments: ALL,
     search: ALL,
     leadershipRanking: ALL,
+    leaders: ALL,
+    leaderEvaluations: ALL,
   };
 }
 
@@ -112,6 +116,8 @@ export const PERMISSIONS: Record<Role, RoleMatrix> = {
     attachments: CRU,
     search: READ_ONLY,
     leadershipRanking: READ_ONLY,
+    leaders: READ_ONLY,
+    leaderEvaluations: NONE,
   },
 
   // Perfil 4 — Liderança: acesso restrito a cadastrar apenas Inspeções e
@@ -141,6 +147,12 @@ export const PERMISSIONS: Record<Role, RoleMatrix> = {
     attachments: CRU,
     search: READ_ONLY,
     leadershipRanking: READ_ONLY,
+    // A liderança já compara pontuações de todos os líderes via
+    // leadershipRanking (ranking público). O cadastro/gestão de líderes e as
+    // avaliações manuais (potencialmente sensíveis) ficam fora do alcance
+    // desse perfil.
+    leaders: NONE,
+    leaderEvaluations: NONE,
   },
 };
 
