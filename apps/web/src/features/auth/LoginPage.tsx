@@ -8,6 +8,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Field } from '../../components/ui/Field';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
+import { Tag } from '../../components/ui/Tag';
 import { AuthLogo } from './AuthLogo';
 
 const schema = z.object({
@@ -43,19 +44,36 @@ export function LoginPage() {
   return (
     <div className="min-h-screen flex">
       <div className="hidden lg:flex lg:w-1/2 brand-gradient text-white flex-col justify-between p-12 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, white 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
+        <div className="absolute inset-0 technical-grid" />
+        <div className="absolute right-8 top-[28%] flex flex-col items-end gap-3 opacity-90">
+          {['NR-35', 'NR-18', 'NR-06'].map((t, i) => (
+            <Tag key={t} tone="ghost" className={i % 2 === 0 ? 'rotate-[-3deg]' : 'rotate-[2deg]'}>
+              {t}
+            </Tag>
+          ))}
+        </div>
+
         <img src="/logo-engecom.png" alt="ENGECOM" className="relative h-10 w-auto" />
-        <div className="relative max-w-md">
-          <div className="h-1 w-14 safety-stripe rounded-full mb-5" />
-          <h1 className="text-3xl font-semibold leading-tight mb-4">
-            Segurança do trabalho, centralizada e sob controle.
+
+        <div className="relative max-w-lg">
+          <p className="eyebrow text-[var(--color-safety-400)] mb-4">Gestão de Segurança do Trabalho</p>
+          <h1 className="font-extrabold leading-[0.95] mb-6 tracking-tight" style={{ fontSize: 'clamp(2.5rem, 4vw, 3.75rem)' }}>
+            SEGURANÇA
+            <br />
+            EM
+            <br />
+            <span className="text-[var(--color-safety-400)]">OPERAÇÃO.</span>
           </h1>
-          <p className="text-[var(--color-brand-200)] text-sm leading-relaxed">
-            Acompanhe rituais, DDS, inspeções, desvios e o Índice de Desenvolvimento de Segurança (IDS) da ENGECOM em
+          <div className="border-t border-dashed border-white/25 mb-5 w-24" />
+          <p className="text-[var(--color-brand-200)] text-sm leading-relaxed max-w-sm">
+            Rituais, DDS, inspeções, desvios e o Índice de Desenvolvimento de Segurança (IDS) da ENGECOM, reunidos em
             uma única plataforma corporativa.
           </p>
         </div>
-        <p className="relative text-xs text-[var(--color-brand-300)]">© {new Date().getFullYear()} ENGECOM</p>
+
+        <p className="relative eyebrow text-[var(--color-brand-300)] tracking-normal normal-case font-normal">
+          © {new Date().getFullYear()} ENGECOM
+        </p>
       </div>
 
       <div className="flex-1 flex items-center justify-center p-6 sm:p-10 bg-[var(--color-surface)]">

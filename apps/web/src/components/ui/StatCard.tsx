@@ -4,14 +4,27 @@ import { ArrowDownRight, ArrowUpRight } from 'lucide-react';
 
 type Tone = 'brand' | 'success' | 'warning' | 'danger' | 'neutral';
 
-const TONE_BADGE: Record<Tone, string> = {
-  brand: 'bg-gradient-to-br from-[var(--color-brand-500)] to-[var(--color-brand-700)] text-white',
-  success: 'bg-gradient-to-br from-[#22c55e] to-[var(--color-success-700)] text-white',
-  warning: 'bg-gradient-to-br from-[var(--color-safety-500)] to-[var(--color-warning-700)] text-white',
-  danger: 'bg-gradient-to-br from-[#ef4444] to-[var(--color-danger-700)] text-white',
-  neutral: 'bg-gradient-to-br from-[var(--color-ink-400)] to-[var(--color-ink-700)] text-white',
+const TONE_TEXT: Record<Tone, string> = {
+  brand: 'text-[var(--color-brand-700)]',
+  success: 'text-[var(--color-success-700)]',
+  warning: 'text-[var(--color-warning-700)]',
+  danger: 'text-[var(--color-danger-700)]',
+  neutral: 'text-[var(--color-ink-700)]',
 };
 
+const TONE_RULE: Record<Tone, string> = {
+  brand: 'bg-[var(--color-brand-600)]',
+  success: 'bg-[var(--color-success-600)]',
+  warning: 'bg-[var(--color-safety-500)]',
+  danger: 'bg-[var(--color-danger-600)]',
+  neutral: 'bg-[var(--color-ink-400)]',
+};
+
+/**
+ * O indicador é o protagonista aqui: número grande e denso, rótulo eyebrow
+ * mono acima, uma régua de cor embaixo — sem ícone-fantasma gigante nem
+ * gradiente decorativo. É o "SEGURANÇA EM NÚMEROS" do dashboard editorial.
+ */
 export function StatCard({
   label,
   value,
@@ -29,27 +42,20 @@ export function StatCard({
 }) {
   return (
     <div
-      className="relative overflow-hidden bg-[var(--color-card)] border border-[var(--color-border)] rounded-xl p-4 flex flex-col gap-3 min-w-0 transition-shadow hover:[box-shadow:var(--shadow-elevated)]"
+      className="relative flex flex-col gap-2.5 bg-[var(--color-card)] border border-[var(--color-border)] rounded-lg p-4 min-w-0 transition-shadow hover:[box-shadow:var(--shadow-elevated)]"
       style={{ boxShadow: 'var(--shadow-card)' }}
     >
-      {icon && (
-        <div className={clsx('pointer-events-none absolute -right-3 -top-3 w-16 h-16 rounded-2xl rotate-12 opacity-[0.07]', TONE_BADGE[tone])} />
-      )}
-      <div className="flex items-center justify-between relative">
-        <p className="text-xs font-medium text-[var(--color-ink-500)] uppercase tracking-wide truncate">{label}</p>
-        {icon && (
-          <div className={clsx('w-9 h-9 rounded-lg flex items-center justify-center shrink-0', TONE_BADGE[tone])}>
-            {icon}
-          </div>
-        )}
+      <div className="flex items-center justify-between gap-2">
+        <p className="eyebrow text-[var(--color-ink-500)] truncate">{label}</p>
+        {icon && <span className={clsx('shrink-0', TONE_TEXT[tone])}>{icon}</span>}
       </div>
-      <p className="text-2xl font-semibold text-[var(--color-ink-900)] truncate relative">{value}</p>
+      <p className={clsx('text-3xl font-extrabold tabular-nums tracking-tight leading-none truncate', TONE_TEXT[tone])}>{value}</p>
       {(trend || hint) && (
-        <div className="flex items-center gap-1.5 text-xs relative">
+        <div className="flex items-center gap-1.5 text-xs">
           {trend && (
             <span
               className={clsx(
-                'inline-flex items-center gap-0.5 font-medium',
+                'inline-flex items-center gap-0.5 font-semibold',
                 trend.value >= 0 ? 'text-[var(--color-success-700)]' : 'text-[var(--color-danger-700)]'
               )}
             >
@@ -60,6 +66,7 @@ export function StatCard({
           {hint && <span className="text-[var(--color-ink-500)]">{hint}</span>}
         </div>
       )}
+      <span className={clsx('absolute left-4 right-4 bottom-0 h-[3px] rounded-t-full opacity-70', TONE_RULE[tone])} />
     </div>
   );
 }

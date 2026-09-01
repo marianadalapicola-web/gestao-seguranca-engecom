@@ -47,14 +47,14 @@ export function DataTable<T>({
     <div className="overflow-x-auto -mx-5 px-5 scrollbar-thin">
       <table className="w-full text-sm border-collapse min-w-[640px]">
         <thead>
-          <tr className="border-b border-[var(--color-border)]">
+          <tr className="border-b-2 border-[var(--color-ink-900)]">
             {columns.map((col) => (
               <th
                 key={col.key}
                 className={clsx(
-                  'text-left font-medium text-[var(--color-ink-500)] text-xs uppercase tracking-wide py-2.5 px-3 whitespace-nowrap',
+                  'eyebrow text-left text-[var(--color-ink-500)] py-2.5 px-3 whitespace-nowrap',
                   col.hideOnMobile && 'hidden sm:table-cell',
-                  col.sortable && 'cursor-pointer select-none hover:text-[var(--color-ink-700)]',
+                  col.sortable && 'cursor-pointer select-none hover:text-[var(--color-brand-700)]',
                   col.className
                 )}
                 onClick={() => col.sortable && onSortChange?.(col.key)}
@@ -64,12 +64,12 @@ export function DataTable<T>({
                   {col.sortable &&
                     (sortBy === col.key ? (
                       sortDir === 'asc' ? (
-                        <ArrowUp size={12} />
+                        <ArrowUp size={11} />
                       ) : (
-                        <ArrowDown size={12} />
+                        <ArrowDown size={11} />
                       )
                     ) : (
-                      <ArrowUpDown size={12} className="opacity-40" />
+                      <ArrowUpDown size={11} className="opacity-40" />
                     ))}
                 </span>
               </th>
@@ -77,17 +77,28 @@ export function DataTable<T>({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
+          {rows.map((row, i) => (
             <tr
               key={getRowId(row)}
               onClick={() => onRowClick?.(row)}
               className={clsx(
-                'border-b border-[var(--color-border)] last:border-0',
+                'group border-b border-[var(--color-border)] last:border-0 transition-colors',
+                i % 2 === 1 && 'bg-[var(--color-surface)]/60',
                 onRowClick && 'cursor-pointer hover:bg-[var(--color-brand-50)]'
               )}
             >
-              {columns.map((col) => (
-                <td key={col.key} className={clsx('py-2.5 px-3 text-[var(--color-ink-900)]', col.hideOnMobile && 'hidden sm:table-cell', col.className)}>
+              {columns.map((col, colIdx) => (
+                <td
+                  key={col.key}
+                  className={clsx(
+                    'relative py-3 px-3 text-[var(--color-ink-900)]',
+                    col.hideOnMobile && 'hidden sm:table-cell',
+                    col.className
+                  )}
+                >
+                  {colIdx === 0 && onRowClick && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[2px] bg-[var(--color-safety-500)] opacity-0 group-hover:opacity-100 transition-opacity" />
+                  )}
                   {col.render ? col.render(row) : String((row as Record<string, unknown>)[col.key] ?? '—')}
                 </td>
               ))}

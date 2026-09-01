@@ -10,7 +10,6 @@ import {
   ListChecks,
   Siren,
   HandMetal,
-  Gauge,
   Plus,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -25,6 +24,7 @@ import { Badge } from '../../components/ui/Badge';
 import { FilterSelect } from '../../components/ui/FilterBar';
 import { Button } from '../../components/ui/Button';
 import { Spinner } from '../../components/ui/Spinner';
+import { IdsMark } from '../../components/ui/ModuleMark';
 import { EvolutionChart } from '../../components/charts/EvolutionChart';
 import { SectorBarChart } from '../../components/charts/SectorBarChart';
 
@@ -66,20 +66,29 @@ export function DashboardPage() {
   const summary = summaryQuery.data;
 
   const quickActions = [
-    { label: 'Novo DDS', module: 'dds' as const, path: '/dds', icon: MessageSquare },
-    { label: 'Novo Ritual', module: 'rituals' as const, path: '/rituais', icon: Megaphone },
-    { label: 'Nova Inspeção', module: 'inspections' as const, path: '/inspecoes', icon: ClipboardCheck },
-    { label: 'Novo Desvio', module: 'deviations' as const, path: '/desvios', icon: AlertTriangle },
+    { label: 'DDS', module: 'dds' as const, path: '/dds', icon: MessageSquare },
+    { label: 'Ritual', module: 'rituals' as const, path: '/rituais', icon: Megaphone },
+    { label: 'Inspeção', module: 'inspections' as const, path: '/inspecoes', icon: ClipboardCheck },
+    { label: 'Desvio', module: 'deviations' as const, path: '/desvios', icon: AlertTriangle },
   ].filter((action) => can(action.module, 'create'));
+
+  const operationRows = [
+    { label: 'DDS realizados', value: summary?.dds ?? 0 },
+    { label: 'Rituais realizados', value: summary?.rituals ?? 0 },
+    { label: 'Inspeções realizadas', value: summary?.inspections ?? 0 },
+    { label: 'Desvios encontrados', value: summary?.deviations.total ?? 0 },
+    { label: 'Desvios tratados', value: summary?.deviations.resolved ?? 0 },
+  ];
 
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
+        eyebrow="Painel Geral · ENGECOM"
         title={`Olá, ${user?.name.split(' ')[0]}`}
         subtitle={`Perfil: ${user?.roleLabel} · Painel geral de segurança do trabalho`}
         actions={quickActions.map((action) => (
           <Button key={action.path} variant="outline" size="sm" onClick={() => navigate(action.path)}>
-            <Plus size={14} /> {action.label}
+            <Plus size={13} /> Registrar {action.label}
           </Button>
         ))}
       />
@@ -105,19 +114,19 @@ export function DashboardPage() {
             placeholder="Todos os responsáveis"
           />
           <div className="flex items-center gap-2 ml-auto">
-            <label className="text-xs text-[var(--color-ink-500)]">Período:</label>
+            <label className="eyebrow text-[var(--color-ink-500)]">Período:</label>
             <input
               type="date"
               value={filters.dateFrom ?? ''}
               onChange={(e) => setFilters((f) => ({ ...f, dateFrom: e.target.value || undefined }))}
-              className="rounded-md border border-[var(--color-border-strong)] px-2 py-1.5 text-xs"
+              className="rounded-[6px] border border-[var(--color-border-strong)] px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-safety-500)]"
             />
             <span className="text-[var(--color-ink-400)] text-xs">até</span>
             <input
               type="date"
               value={filters.dateTo ?? ''}
               onChange={(e) => setFilters((f) => ({ ...f, dateTo: e.target.value || undefined }))}
-              className="rounded-md border border-[var(--color-border-strong)] px-2 py-1.5 text-xs"
+              className="rounded-[6px] border border-[var(--color-border-strong)] px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-safety-500)]"
             />
           </div>
         </CardBody>
@@ -126,35 +135,69 @@ export function DashboardPage() {
       {summaryQuery.isLoading ? (
         <Spinner label="Carregando indicadores..." />
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-          <StatCard
-            label="IDS Atual"
-            value={summary?.ids?.value ?? '—'}
-            icon={<Gauge size={16} />}
-            tone="brand"
-            hint={summary?.ids ? `Meta: ${summary.ids.target ?? '—'}` : 'Não configurado'}
-          />
-          <StatCard label="DDS Realizados" value={summary?.dds ?? 0} icon={<MessageSquare size={16} />} tone="brand" />
-          <StatCard label="Rituais Realizados" value={summary?.rituals ?? 0} icon={<Megaphone size={16} />} tone="brand" />
-          <StatCard label="Inspeções Realizadas" value={summary?.inspections ?? 0} icon={<ClipboardCheck size={16} />} tone="brand" />
-          <StatCard
-            label="% Conformidade"
-            value={summary?.compliancePercentage !== null && summary?.compliancePercentage !== undefined ? `${summary.compliancePercentage}%` : '—'}
-            icon={<CheckCircle2 size={16} />}
-            tone="success"
-          />
-          <StatCard label="Desvios Encontrados" value={summary?.deviations.total ?? 0} icon={<AlertTriangle size={16} />} tone="warning" />
-          <StatCard label="Desvios Tratados" value={summary?.deviations.resolved ?? 0} icon={<CheckCircle2 size={16} />} tone="success" />
-          <StatCard label="Planos em Aberto" value={summary?.actionPlans.open ?? 0} icon={<ListChecks size={16} />} tone="brand" />
-          <StatCard label="Planos Vencidos" value={summary?.actionPlans.overdue ?? 0} icon={<ListChecks size={16} />} tone="danger" />
-          <StatCard label="Incidentes" value={summary?.incidents ?? 0} icon={<Siren size={16} />} tone="danger" />
-          <StatCard label="Direito de Recusa" value={summary?.refusalRights ?? 0} icon={<HandMetal size={16} />} tone="neutral" />
-        </div>
+        <>
+          {/* Hero editorial: IDS em destaque + indicadores da operação lado a lado */}
+          <div className="grid grid-cols-1 xl:grid-cols-5 gap-5 items-stretch">
+            <div className="xl:col-span-2 relative overflow-hidden corner-notch brand-gradient text-white p-6 flex flex-col justify-between min-h-[220px]">
+              <div className="absolute inset-0 technical-grid opacity-60" />
+              <div className="relative flex items-start justify-between gap-3">
+                <div>
+                  <p className="eyebrow text-[var(--color-safety-400)] mb-2">Índice de Desenvolvimento</p>
+                  <h2 className="font-extrabold leading-[0.95] tracking-tight" style={{ fontSize: 'clamp(1.6rem, 2.4vw, 2.25rem)' }}>
+                    SEGURANÇA
+                    <br />
+                    EM NÚMEROS.
+                  </h2>
+                </div>
+                <IdsMark size={34} className="text-[var(--color-safety-400)] shrink-0 opacity-90" />
+              </div>
+              <div className="relative flex items-end justify-between gap-4 mt-8">
+                <div className="flex items-end gap-3">
+                  <span className="text-6xl font-extrabold tabular-nums leading-none tracking-tight">
+                    {summary?.ids?.value ?? '—'}
+                  </span>
+                  <p className="eyebrow text-[var(--color-brand-200)] pb-1.5">
+                    IDS atual
+                    <br />
+                    Meta: {summary?.ids?.target ?? '—'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <Card className="xl:col-span-3">
+              <CardHeader eyebrow="Operação · Este período" title="Indicadores da Operação" />
+              <CardBody className="!p-0">
+                <div className="divide-y divide-[var(--color-border)]">
+                  {operationRows.map((row) => (
+                    <div key={row.label} className="flex items-center justify-between px-5 py-3.5">
+                      <span className="text-sm font-semibold text-[var(--color-ink-700)]">{row.label}</span>
+                      <span className="text-2xl font-extrabold tabular-nums text-[var(--color-ink-950)]">{row.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardBody>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+            <StatCard
+              label="% Conformidade"
+              value={summary?.compliancePercentage !== null && summary?.compliancePercentage !== undefined ? `${summary.compliancePercentage}%` : '—'}
+              icon={<CheckCircle2 size={16} />}
+              tone="success"
+            />
+            <StatCard label="Planos em Aberto" value={summary?.actionPlans.open ?? 0} icon={<ListChecks size={16} />} tone="brand" />
+            <StatCard label="Planos Vencidos" value={summary?.actionPlans.overdue ?? 0} icon={<ListChecks size={16} />} tone="danger" />
+            <StatCard label="Incidentes" value={summary?.incidents ?? 0} icon={<Siren size={16} />} tone="danger" />
+            <StatCard label="Direito de Recusa" value={summary?.refusalRights ?? 0} icon={<HandMetal size={16} />} tone="neutral" />
+          </div>
+        </>
       )}
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         <Card className="xl:col-span-2">
-          <CardHeader title="Evolução Mensal" subtitle="DDS, rituais, inspeções e desvios nos últimos 6 meses" />
+          <CardHeader eyebrow="Últimos 6 meses" title="Evolução Mensal" subtitle="DDS, rituais, inspeções e desvios" />
           <CardBody>
             {evolutionQuery.isLoading ? (
               <Spinner />
@@ -173,7 +216,7 @@ export function DashboardPage() {
         </Card>
 
         <Card>
-          <CardHeader title="Desvios por Setor" subtitle="Setores com mais desvios registrados" />
+          <CardHeader eyebrow="Ranking de setores" title="Desvios por Setor" />
           <CardBody>
             {sectorQuery.isLoading ? (
               <Spinner />
@@ -187,10 +230,11 @@ export function DashboardPage() {
       </div>
 
       {can('leadershipRanking', 'read') && (
-        <Card>
+        <Card accent="safety">
           <CardHeader
-            title="🏆 Ranking de Liderança"
-            subtitle="Top 3 lideranças do mês, com base em dados reais de segurança."
+            eyebrow="Este mês"
+            title="Ranking de Liderança"
+            subtitle="Top 3 lideranças, com base em dados reais de segurança."
             actions={
               <Button variant="outline" size="sm" onClick={() => navigate('/ranking-lideranca')}>
                 Ver ranking completo
@@ -210,14 +254,14 @@ export function DashboardPage() {
                   {rankingSummaryQuery.data.top.map((entry) => (
                     <div
                       key={entry.userId}
-                      className="flex items-center gap-3 rounded-lg border border-[var(--color-border)] p-3 cursor-pointer hover:bg-[var(--color-brand-50)]"
+                      className="flex items-center gap-3 rounded-lg border border-[var(--color-border)] p-3 cursor-pointer hover:bg-[var(--color-brand-50)] hover:border-[var(--color-brand-300)] transition-colors"
                       onClick={() => navigate(`/ranking-lideranca/${entry.userId}`)}
                     >
                       <span className="text-2xl leading-none shrink-0">{medalFor(entry.position)}</span>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-[var(--color-ink-900)] truncate">{entry.name}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-sm font-semibold text-[var(--color-brand-700)]">{entry.score}</span>
+                        <p className="text-sm font-bold text-[var(--color-ink-900)] truncate">{entry.name}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-sm font-extrabold tabular-nums text-[var(--color-brand-700)]">{entry.score}</span>
                           <Badge variant={classificationVariant(entry.classification)}>{entry.classification}</Badge>
                         </div>
                       </div>

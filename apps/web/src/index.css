@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Segoe UI", ui-sans-serif, system-ui, Roboto, Helvetica, Arial, sans-serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 
   /* ENGECOM — identidade visual: azul industrial de segurança + neutros técnicos.
      A marca da empresa é azul; a paleta aqui aprofunda esse azul para um tom mais
@@ -19,18 +20,19 @@
   --color-brand-100: #dfedfa;
   --color-brand-50: #f1f7fd;
 
-  /* Amarelo de sinalização — usado só como traço/acento de assinatura da marca. */
+  /* Amarelo de sinalização — usado só como traço/acento/etiqueta de assinatura. */
   --color-safety-600: #c98a06;
   --color-safety-500: #eeab1e;
   --color-safety-400: #f7c948;
   --color-safety-100: #fdf1d3;
 
-  --color-surface: #f4f6f9;
+  --color-surface: #f3f5f8;
   --color-surface-alt: #eceff4;
   --color-card: #ffffff;
   --color-border: #e2e6ed;
   --color-border-strong: #cbd2dd;
 
+  --color-ink-950: #070d17;
   --color-ink-900: #0f1a2b;
   --color-ink-700: #33415a;
   --color-ink-500: #647087;
@@ -52,8 +54,8 @@
   --color-info-600: #2563eb;
   --color-info-700: #1d4ed8;
 
-  --shadow-card: 0 1px 2px rgba(15, 26, 43, 0.04), 0 1px 3px rgba(15, 26, 43, 0.06);
-  --shadow-elevated: 0 4px 12px rgba(8, 28, 52, 0.10), 0 2px 4px rgba(8, 28, 52, 0.06);
+  --shadow-card: 0 1px 2px rgba(15, 26, 43, 0.05), 0 1px 3px rgba(15, 26, 43, 0.06);
+  --shadow-elevated: 0 8px 20px rgba(8, 28, 52, 0.12), 0 2px 6px rgba(8, 28, 52, 0.07);
 }
 
 @layer base {
@@ -68,9 +70,14 @@
     color: var(--color-ink-900);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01" 1, "cv05" 1;
   }
   ::selection {
     background-color: var(--color-brand-200);
+  }
+  /* Números tabulares por padrão em qualquer indicador/valor numérico. */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -84,8 +91,8 @@
     border-radius: 9999px;
   }
 
-  /* Assinatura visual discreta: um traço de sinalização em degradê, usado como
-     acento pontual (topo da sidebar, painel de login) — nunca como preenchimento. */
+  /* Assinatura visual: traço de sinalização em degradê, usado como acento
+     pontual (topo da sidebar, tarja de login) — nunca como preenchimento. */
   .safety-stripe {
     background: linear-gradient(
       90deg,
@@ -98,5 +105,59 @@
 
   .brand-gradient {
     background: radial-gradient(120% 140% at 0% 0%, var(--color-brand-800) 0%, var(--color-brand-900) 55%, var(--color-brand-950) 100%);
+  }
+
+  /* Rótulo editorial em maiúsculas, monoespaçado, tracking largo — a unidade
+     básica da "linguagem de etiquetas" pedida (NR-35, DDS, APR, RISCO...). */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  /* Etiqueta/carimbo com um canto cortado — remete a placas técnicas e
+     etiquetas de EPI/obra, não a um "sticker" decorativo genérico. */
+  .tag-stamp {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    clip-path: polygon(0 0, 100% 0, 100% 70%, calc(100% - 8px) 100%, 0 100%);
+  }
+
+  /* Malha técnica discreta (planta baixa / papel milimetrado), usada em
+     áreas de destaque (hero do dashboard, tela de login) — nunca full-bleed
+     em telas de trabalho. */
+  .technical-grid {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+  .technical-grid-ink {
+    background-image:
+      linear-gradient(var(--color-border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* Linha técnica fina, para separar seções ao estilo de desenho de
+     engenharia (cota/régua), em vez de um simples divider genérico. */
+  .rule-line {
+    height: 1px;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--color-border-strong) 0,
+      var(--color-border-strong) 6px,
+      transparent 6px,
+      transparent 11px
+    );
+  }
+
+  .corner-notch {
+    clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%);
   }
 }

@@ -10,18 +10,16 @@ export function Sidebar({ mobileOpen, onCloseMobile }: { mobileOpen: boolean; on
 
   const content = (
     <div className="flex flex-col h-full">
-      <div className="px-5 pt-5 pb-4">
+      <div className="relative px-5 pt-5 pb-4 technical-grid">
         <div className="flex items-center gap-2">
           <img src="/logo-engecom.png" alt="ENGECOM" className="h-8 w-auto shrink-0" />
           <button onClick={onCloseMobile} className="ml-auto text-white/70 hover:text-white lg:hidden">
             <X size={20} />
           </button>
         </div>
-        <p className="text-[11px] font-medium text-[var(--color-brand-200)] tracking-wide uppercase mt-2">
-          Gestão de Segurança
-        </p>
+        <p className="eyebrow text-[var(--color-brand-200)] mt-2.5">Gestão de Segurança</p>
       </div>
-      <div className="h-[3px] safety-stripe opacity-80" />
+      <div className="h-[3px] safety-stripe" style={{ clipPath: 'polygon(0 0, 100% 0, 96% 100%, 0% 100%)' }} />
 
       <nav className="flex-1 overflow-y-auto scrollbar-thin py-3 px-2.5">
         {visibleItems.map((item) => (
@@ -32,8 +30,8 @@ export function Sidebar({ mobileOpen, onCloseMobile }: { mobileOpen: boolean; on
             onClick={onCloseMobile}
             className={({ isActive }) =>
               clsx(
-                'group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm mb-0.5 transition-colors',
-                isActive ? 'bg-white/10 text-white font-medium' : 'text-[var(--color-brand-100)] hover:bg-white/5'
+                'group relative flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm mb-0.5 transition-colors',
+                isActive ? 'bg-white/10 text-white font-semibold' : 'text-[var(--color-brand-100)] font-medium hover:bg-white/5'
               )
             }
           >
@@ -47,7 +45,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: { mobileOpen: boolean; on
                 />
                 <span
                   className={clsx(
-                    'w-7 h-7 rounded-md flex items-center justify-center shrink-0 transition-colors',
+                    'w-7 h-7 rounded-[5px] flex items-center justify-center shrink-0 transition-colors',
                     isActive ? 'bg-[var(--color-brand-500)] text-white' : 'text-[var(--color-brand-300)] group-hover:text-white'
                   )}
                 >
@@ -60,7 +58,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: { mobileOpen: boolean; on
         ))}
       </nav>
 
-      <div className="px-5 py-3.5 border-t border-white/10 text-[10px] text-[var(--color-brand-300)]">
+      <div className="px-5 py-3.5 border-t border-white/10 eyebrow text-[var(--color-brand-300)] tracking-normal normal-case font-normal">
         © {new Date().getFullYear()} ENGECOM — Segurança do Trabalho
       </div>
     </div>

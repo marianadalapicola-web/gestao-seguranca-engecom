@@ -33,7 +33,7 @@ export function Field({
 }
 
 const inputBase =
-  'w-full rounded-md border bg-white px-3 py-2 text-sm text-[var(--color-ink-900)] placeholder:text-[var(--color-ink-400)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-400)] disabled:bg-[var(--color-surface-alt)] disabled:cursor-not-allowed';
+  'w-full rounded-[6px] border bg-white px-3 py-2 text-sm text-[var(--color-ink-900)] placeholder:text-[var(--color-ink-400)] transition-shadow focus:outline-none focus:ring-2 focus:ring-[var(--color-safety-500)] focus:border-[var(--color-brand-500)] disabled:bg-[var(--color-surface-alt)] disabled:cursor-not-allowed';
 
 export function inputClasses(hasError?: boolean) {
   return clsx(inputBase, hasError ? 'border-[var(--color-danger-600)]' : 'border-[var(--color-border-strong)]');

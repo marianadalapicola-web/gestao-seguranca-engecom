@@ -54,7 +54,7 @@ export function FilterSelect({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="rounded-md border border-[var(--color-border-strong)] bg-white px-3 py-2 text-sm text-[var(--color-ink-700)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-400)]"
+      className="rounded-[6px] border border-[var(--color-border-strong)] bg-white px-3 py-2 text-sm text-[var(--color-ink-700)] focus:outline-none focus:ring-2 focus:ring-[var(--color-safety-500)] focus:border-[var(--color-brand-500)]"
     >
       <option value="">{placeholder}</option>
       {options.map((opt) => (

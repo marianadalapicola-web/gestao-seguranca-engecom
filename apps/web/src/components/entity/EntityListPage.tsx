@@ -9,6 +9,7 @@ import { useServerTable } from '../../hooks/useServerTable';
 import { useSites, useSectors, useUsersDirectory } from '../../hooks/useReferenceData';
 import type { PaginatedResponse } from '../../types';
 import { Card, CardBody, CardHeader } from '../ui/Card';
+import { MODULE_MARKS } from '../ui/ModuleMark';
 import { Button } from '../ui/Button';
 import { DataTable } from '../ui/DataTable';
 import { Pagination } from '../ui/Pagination';
@@ -29,7 +30,7 @@ export function EntityListPage<T extends { id: string }>({ config }: { config: M
   const canCreate = can(config.key, 'create');
   const canUpdate = can(config.key, 'update');
   const canDelete = can(config.key, 'delete');
-  const ModuleIcon = NAV_ITEMS.find((item) => item.module === config.key)?.icon;
+  const ModuleIcon = MODULE_MARKS[config.key] ?? NAV_ITEMS.find((item) => item.module === config.key)?.icon;
 
   const table = useServerTable<T>({
     queryKey: config.apiPath,
