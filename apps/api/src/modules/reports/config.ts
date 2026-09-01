@@ -4,6 +4,8 @@ export interface ReportColumn {
   header: string;
   path: string; // dot-path into the record, e.g. "sector.name"
   format?: (value: unknown) => string;
+  /** Relative width weight (default 1) — wider for free-text columns, narrower for codes/dates. */
+  width?: number;
 }
 
 export interface ReportModuleConfig {
@@ -18,6 +20,33 @@ export interface ReportModuleConfig {
 const dateFmt = (v: unknown) => (v ? new Date(v as string).toLocaleDateString('pt-BR') : '');
 const personSelect = { id: true, name: true, email: true } as const;
 
+// Mesmos rótulos usados no Badge/StatusBadge do frontend (components/ui/Badge.tsx)
+// — o relatório precisa mostrar exatamente o que a pessoa já vê na tela, não o
+// valor bruto do enum salvo no banco.
+export const STATUS_LABELS: Record<string, string> = {
+  PLANNED: 'Planejado',
+  IN_PROGRESS: 'Em andamento',
+  COMPLETED: 'Concluído',
+  PENDING: 'Pendente',
+  CANCELED: 'Cancelado',
+  OPEN: 'Aberto',
+  IN_TREATMENT: 'Em tratamento',
+  RESOLVED: 'Resolvido',
+  INVESTIGATING: 'Em investigação',
+  CLOSED: 'Encerrado',
+  IN_ANALYSIS: 'Em análise',
+  TREATED: 'Tratado',
+  OVERDUE: 'Vencido',
+  ACTIVE: 'Ativo',
+  BLOCKED: 'Bloqueado',
+  LOW: 'Baixa',
+  MEDIUM: 'Média',
+  HIGH: 'Alta',
+  CRITICAL: 'Crítica',
+};
+
+const statusFmt = (v: unknown) => (v ? (STATUS_LABELS[v as string] ?? String(v)) : '');
+
 export const REPORT_MODULES: Record<string, ReportModuleConfig> = {
   rituals: {
     module: 'rituals',
@@ -26,14 +55,14 @@ export const REPORT_MODULES: Record<string, ReportModuleConfig> = {
     dateField: 'date',
     include: { site: true, sector: true, responsible: { select: personSelect } },
     columns: [
-      { header: 'Data', path: 'date', format: dateFmt },
-      { header: 'Tipo', path: 'type' },
-      { header: 'Tema', path: 'theme' },
-      { header: 'Obra', path: 'site.name' },
-      { header: 'Setor', path: 'sector.name' },
-      { header: 'Responsável', path: 'responsible.name' },
-      { header: 'Participantes', path: 'participantsCount' },
-      { header: 'Status', path: 'status' },
+      { header: 'Data', path: 'date', format: dateFmt, width: 0.7 },
+      { header: 'Tipo', path: 'type', width: 1 },
+      { header: 'Tema', path: 'theme', width: 1.4 },
+      { header: 'Obra', path: 'site.name', width: 1 },
+      { header: 'Setor', path: 'sector.name', width: 1 },
+      { header: 'Responsável', path: 'responsible.name', width: 1.2 },
+      { header: 'Participantes', path: 'participantsCount', width: 0.8 },
+      { header: 'Status', path: 'status', format: statusFmt, width: 0.9 },
     ],
   },
   dds: {
@@ -43,12 +72,12 @@ export const REPORT_MODULES: Record<string, ReportModuleConfig> = {
     dateField: 'date',
     include: { site: true, sector: true, responsible: { select: personSelect } },
     columns: [
-      { header: 'Data', path: 'date', format: dateFmt },
-      { header: 'Tema', path: 'theme' },
-      { header: 'Obra', path: 'site.name' },
-      { header: 'Setor', path: 'sector.name' },
-      { header: 'Responsável', path: 'responsible.name' },
-      { header: 'Participantes', path: 'participantsCount' },
+      { header: 'Data', path: 'date', format: dateFmt, width: 0.7 },
+      { header: 'Tema', path: 'theme', width: 1.6 },
+      { header: 'Obra', path: 'site.name', width: 1 },
+      { header: 'Setor', path: 'sector.name', width: 1 },
+      { header: 'Responsável', path: 'responsible.name', width: 1.2 },
+      { header: 'Participantes', path: 'participantsCount', width: 0.8 },
     ],
   },
   inspections: {
@@ -58,13 +87,13 @@ export const REPORT_MODULES: Record<string, ReportModuleConfig> = {
     dateField: 'date',
     include: { site: true, sector: true, responsible: { select: personSelect } },
     columns: [
-      { header: 'Data', path: 'date', format: dateFmt },
-      { header: 'Tipo', path: 'type' },
-      { header: 'Obra', path: 'site.name' },
-      { header: 'Setor', path: 'sector.name' },
-      { header: 'Responsável', path: 'responsible.name' },
-      { header: 'Status', path: 'status' },
-      { header: 'Resultado', path: 'result' },
+      { header: 'Data', path: 'date', format: dateFmt, width: 0.7 },
+      { header: 'Tipo', path: 'type', width: 1.1 },
+      { header: 'Obra', path: 'site.name', width: 1 },
+      { header: 'Setor', path: 'sector.name', width: 1 },
+      { header: 'Responsável', path: 'responsible.name', width: 1.2 },
+      { header: 'Status', path: 'status', format: statusFmt, width: 0.9 },
+      { header: 'Resultado', path: 'result', width: 1.4 },
     ],
   },
   deviations: {
@@ -74,14 +103,14 @@ export const REPORT_MODULES: Record<string, ReportModuleConfig> = {
     dateField: 'date',
     include: { site: true, sector: true, responsible: { select: personSelect } },
     columns: [
-      { header: 'Data', path: 'date', format: dateFmt },
-      { header: 'Categoria', path: 'category' },
-      { header: 'Gravidade', path: 'severity' },
-      { header: 'Obra', path: 'site.name' },
-      { header: 'Setor', path: 'sector.name' },
-      { header: 'Responsável', path: 'responsible.name' },
-      { header: 'Status', path: 'status' },
-      { header: 'Prazo', path: 'dueDate', format: dateFmt },
+      { header: 'Data', path: 'date', format: dateFmt, width: 0.7 },
+      { header: 'Categoria', path: 'category', width: 1.1 },
+      { header: 'Gravidade', path: 'severity', format: statusFmt, width: 0.8 },
+      { header: 'Obra', path: 'site.name', width: 1 },
+      { header: 'Setor', path: 'sector.name', width: 1 },
+      { header: 'Responsável', path: 'responsible.name', width: 1.2 },
+      { header: 'Status', path: 'status', format: statusFmt, width: 0.9 },
+      { header: 'Prazo', path: 'dueDate', format: dateFmt, width: 0.7 },
     ],
   },
   incidents: {
@@ -91,11 +120,11 @@ export const REPORT_MODULES: Record<string, ReportModuleConfig> = {
     dateField: 'date',
     include: { site: true, sector: true },
     columns: [
-      { header: 'Data', path: 'date', format: dateFmt },
-      { header: 'Tipo', path: 'type' },
-      { header: 'Obra', path: 'site.name' },
-      { header: 'Setor', path: 'sector.name' },
-      { header: 'Status', path: 'status' },
+      { header: 'Data', path: 'date', format: dateFmt, width: 0.7 },
+      { header: 'Tipo', path: 'type', width: 1.3 },
+      { header: 'Obra', path: 'site.name', width: 1 },
+      { header: 'Setor', path: 'sector.name', width: 1 },
+      { header: 'Status', path: 'status', format: statusFmt, width: 0.9 },
     ],
   },
   refusalRights: {
@@ -105,11 +134,11 @@ export const REPORT_MODULES: Record<string, ReportModuleConfig> = {
     dateField: 'date',
     include: { site: true, sector: true, responsible: { select: personSelect } },
     columns: [
-      { header: 'Data', path: 'date', format: dateFmt },
-      { header: 'Trabalhador', path: 'workerName' },
-      { header: 'Setor', path: 'sector.name' },
-      { header: 'Motivo', path: 'reason' },
-      { header: 'Status', path: 'status' },
+      { header: 'Data', path: 'date', format: dateFmt, width: 0.7 },
+      { header: 'Trabalhador', path: 'workerName', width: 1.3 },
+      { header: 'Setor', path: 'sector.name', width: 1 },
+      { header: 'Motivo', path: 'reason', width: 1.8 },
+      { header: 'Status', path: 'status', format: statusFmt, width: 0.9 },
     ],
   },
   actionPlans: {
@@ -119,13 +148,13 @@ export const REPORT_MODULES: Record<string, ReportModuleConfig> = {
     dateField: 'dueDate',
     include: { site: true, sector: true, responsible: { select: personSelect } },
     columns: [
-      { header: 'Ação', path: 'action' },
-      { header: 'Origem', path: 'origin' },
-      { header: 'Responsável', path: 'responsible.name' },
-      { header: 'Setor', path: 'sector.name' },
-      { header: 'Prazo', path: 'dueDate', format: dateFmt },
-      { header: 'Prioridade', path: 'priority' },
-      { header: 'Status', path: 'status' },
+      { header: 'Ação', path: 'action', width: 2 },
+      { header: 'Origem', path: 'origin', width: 1 },
+      { header: 'Responsável', path: 'responsible.name', width: 1.2 },
+      { header: 'Setor', path: 'sector.name', width: 1 },
+      { header: 'Prazo', path: 'dueDate', format: dateFmt, width: 0.7 },
+      { header: 'Prioridade', path: 'priority', format: statusFmt, width: 0.8 },
+      { header: 'Status', path: 'status', format: statusFmt, width: 0.9 },
     ],
   },
 };
