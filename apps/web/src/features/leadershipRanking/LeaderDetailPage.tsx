@@ -24,15 +24,19 @@ const emptyEvaluationForm = { leadershipScore: 8, communicationScore: 8, safetyC
 export function LeaderDetailPage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
-  const { can } = useAuth();
+  const { can, user } = useAuth();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const [period, setPeriod] = useState<PeriodPreset>('month');
   const [evalModalOpen, setEvalModalOpen] = useState(false);
   const [evalForm, setEvalForm] = useState(emptyEvaluationForm);
 
+  const isOwnProfile = user?.id === userId;
   const canReadProfile = can('leaders', 'read');
-  const canReadEvaluations = can('leaderEvaluations', 'read');
+  // A liderança só pode ler avaliações no próprio perfil, nunca no de um
+  // colega — o backend também recusa, isso só evita disparar a consulta e
+  // mostrar a seção à toa em quem não é dono do perfil.
+  const canReadEvaluations = can('leaderEvaluations', 'read') && (user?.role !== 'LEADERSHIP' || isOwnProfile);
   const canCreateEvaluations = can('leaderEvaluations', 'create');
 
   const detailQuery = useQuery({

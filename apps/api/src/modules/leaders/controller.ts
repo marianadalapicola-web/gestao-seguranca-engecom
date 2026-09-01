@@ -165,6 +165,12 @@ export const listEvaluations = asyncHandler(async (req: Request, res: Response) 
   const leader = await prisma.user.findFirst({ where: { id: req.params.id, role: 'LEADERSHIP' } });
   if (!leader) throw new NotFoundError('Líder não encontrado.');
 
+  // A liderança só acompanha o próprio histórico — não o de colegas —
+  // mesmo tendo permissão de leitura no módulo leaderEvaluations.
+  if (req.user!.role === 'LEADERSHIP' && req.user!.id !== req.params.id) {
+    throw new ForbiddenError('Você só pode visualizar suas próprias avaliações.');
+  }
+
   const evaluations = await prisma.leaderEvaluation.findMany({
     where: { leaderId: req.params.id },
     include: { evaluator: { select: { id: true, name: true } } },

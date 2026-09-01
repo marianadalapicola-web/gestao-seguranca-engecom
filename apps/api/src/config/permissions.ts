@@ -117,7 +117,8 @@ export const PERMISSIONS: Record<Role, RoleMatrix> = {
     search: READ_ONLY,
     leadershipRanking: READ_ONLY,
     leaders: READ_ONLY,
-    leaderEvaluations: NONE,
+    // Técnico também pode lançar avaliações manuais dos líderes.
+    leaderEvaluations: CRU,
   },
 
   // Perfil 4 — Liderança: acesso restrito a cadastrar apenas Inspeções e
@@ -148,11 +149,13 @@ export const PERMISSIONS: Record<Role, RoleMatrix> = {
     search: READ_ONLY,
     leadershipRanking: READ_ONLY,
     // A liderança já compara pontuações de todos os líderes via
-    // leadershipRanking (ranking público). O cadastro/gestão de líderes e as
-    // avaliações manuais (potencialmente sensíveis) ficam fora do alcance
-    // desse perfil.
+    // leadershipRanking (ranking público). O cadastro/gestão de líderes fica
+    // fora do alcance desse perfil, mas o próprio líder pode ler suas
+    // avaliações (nunca as de outro líder — restrição aplicada no
+    // controller, não apenas por este módulo) para acompanhar seu
+    // desempenho.
     leaders: NONE,
-    leaderEvaluations: NONE,
+    leaderEvaluations: READ_ONLY,
   },
 };
 
