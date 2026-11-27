@@ -30,16 +30,27 @@ Siga as seções na ordem — cada uma te dá um valor que a próxima etapa vai 
 3. Escolha a região mais próxima do Brasil disponível (ex.: `South America (São Paulo)`
    se aparecer, senão `US East`).
 4. Espere o projeto terminar de ser criado (1-2 minutos).
-5. No topo da página do projeto, clique no botão **Connect**. No painel que abrir,
-   clique na aba **Transaction pooler** (não "Direct connection" — essa às vezes falha
-   em provedores como o Render). Copie a string URI mostrada — algo como:
+5. No topo da página do projeto, clique no botão **Connect**. No painel que abrir você
+   vai precisar de **duas** strings diferentes (o sistema usa uma para rodar no dia a
+   dia e outra, só uma vez, para criar as tabelas do banco):
+   - Aba **Transaction pooler** → copie a URI. Vai ser o valor de `DATABASE_URL`.
+   - Aba **Session pooler** → copie a URI. Vai ser o valor de `DIRECT_URL`.
+
+   Ambas se parecem com isto (só o número depois dos dois-pontos no final muda: `6543`
+   na Transaction pooler, `5432` na Session pooler):
    ```
    postgresql://postgres.xxxxxxxxxxxx:[YOUR-PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres
    ```
-6. Troque `[YOUR-PASSWORD]` pela senha que você criou no passo 2. **Guarde essa URL
-   completa** — é o valor de `DATABASE_URL` que vamos usar no Render (seção 3). Se
-   esqueceu a senha, redefina em **Project Settings → Database → Reset database
-   password**.
+6. Nas DUAS strings, troque `[YOUR-PASSWORD]` pela senha que você criou no passo 2.
+   **Guarde as duas URLs completas** — são os valores de `DATABASE_URL` e `DIRECT_URL`
+   que vamos usar no Render (seção 3). Se esqueceu a senha, redefina em **Project
+   Settings → Database → Reset database password**.
+
+   > Por quê duas? O Supabase coloca um "pooler" de conexões na frente do banco para
+   > lidar com muitas conexões ao mesmo tempo. Esse pooler (na aba Transaction pooler)
+   > é ótimo para o uso normal do sistema, mas não suporta o jeito como o Prisma cria as
+   > tabelas — por isso essa etapa específica usa a Session pooler, que não tem essa
+   > limitação.
 
 ## 2. Armazenamento de arquivos (Supabase Storage)
 
@@ -80,7 +91,8 @@ de **Storage** — é sempre ali que essas chaves ficam.
 
    | Variável | Valor |
    |---|---|
-   | `DATABASE_URL` | A string completa da Supabase (seção 1) |
+   | `DATABASE_URL` | A string da **Transaction pooler** da Supabase (seção 1) |
+   | `DIRECT_URL` | A string da **Session pooler** da Supabase (seção 1) |
    | `JWT_ACCESS_SECRET` | Uma string aleatória longa — gere em https://generate-secret.vercel.app/32 |
    | `JWT_REFRESH_SECRET` | Outra string aleatória longa, diferente da anterior |
    | `NODE_ENV` | `production` |
@@ -147,3 +159,10 @@ Render e que a URL da Vercel em `WEB_APP_URL` está exatamente igual (sem barra 
 
 **Build falha no Render.** Veja os *logs* do deploy — o mesmo `Dockerfile` do Railway é
 usado, então os erros mais comuns são os mesmos do `DEPLOY.md`.
+
+**"Deploy failed" / "Exited with status 1 while running your code" logo após o build
+terminar.** As linhas `Reading database... X%` antes disso são só a instalação de
+pacotes do sistema durante o build (normal, pode ignorar) — o erro de verdade fica
+abaixo delas no log. Se a mensagem citar `prisma`, `P1001`, `Can't reach database` ou
+algo sobre `migrate`, confira se `DIRECT_URL` está preenchido no Render com a string da
+**Session pooler** (não repita a `DATABASE_URL` ali) — veja a seção 1.

@@ -3,8 +3,16 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // DATABASE_URL: a conexão usada pela aplicação em tempo de execução — pode
+  // (e, atrás de um pooler como o do Supabase/PgBouncer, deve) ser a conexão
+  // "pooled". DIRECT_URL: usada só pelo `prisma migrate` para criar/alterar
+  // tabelas — precisa ser uma conexão direta/sessão, já que poolers em modo
+  // "transaction" não suportam os recursos (prepared statements, advisory
+  // locks) que as migrations exigem. Sem servidor de pooling na frente (ex.:
+  // Railway), as duas variáveis podem apontar para a mesma URL.
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ---------------------------------------------------------------------------

@@ -37,4 +37,8 @@ WORKDIR /app/apps/api
 
 # Applies pending migrations, seeds the first Administrator only if one
 # doesn't already exist yet (see prisma/seed.ts), then starts the server.
-CMD npx prisma migrate deploy && npm run prisma:seed && node dist/index.js
+# DIRECT_URL (see prisma/schema.prisma) only needs to differ from DATABASE_URL
+# behind a connection pooler (e.g. Supabase/PgBouncer) that can't run
+# migrations. Without one (e.g. Railway's own Postgres), default it to
+# DATABASE_URL so existing deployments that never set DIRECT_URL keep working.
+CMD export DIRECT_URL="${DIRECT_URL:-$DATABASE_URL}" && npx prisma migrate deploy && npm run prisma:seed && node dist/index.js
