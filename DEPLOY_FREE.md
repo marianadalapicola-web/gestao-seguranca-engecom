@@ -30,13 +30,16 @@ Siga as seções na ordem — cada uma te dá um valor que a próxima etapa vai 
 3. Escolha a região mais próxima do Brasil disponível (ex.: `South America (São Paulo)`
    se aparecer, senão `US East`).
 4. Espere o projeto terminar de ser criado (1-2 minutos).
-5. Vá em **Project Settings → Database → Connection string** → aba **URI**. Copie essa
-   string — algo como:
+5. No topo da página do projeto, clique no botão **Connect**. No painel que abrir,
+   clique na aba **Transaction pooler** (não "Direct connection" — essa às vezes falha
+   em provedores como o Render). Copie a string URI mostrada — algo como:
    ```
-   postgresql://postgres.xxxxxxxxxxxx:[YOUR-PASSWORD]@aws-0-us-east-1.pooler.supabase.com:5432/postgres
+   postgresql://postgres.xxxxxxxxxxxx:[YOUR-PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres
    ```
 6. Troque `[YOUR-PASSWORD]` pela senha que você criou no passo 2. **Guarde essa URL
-   completa** — é o valor de `DATABASE_URL` que vamos usar no Render (seção 3).
+   completa** — é o valor de `DATABASE_URL` que vamos usar no Render (seção 3). Se
+   esqueceu a senha, redefina em **Project Settings → Database → Reset database
+   password**.
 
 ## 2. Armazenamento de arquivos (Supabase Storage)
 
