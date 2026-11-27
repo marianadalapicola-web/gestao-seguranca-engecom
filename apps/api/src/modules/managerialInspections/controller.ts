@@ -3,7 +3,7 @@ import { prisma } from '../../lib/prisma';
 import { recordAudit } from '../../lib/audit';
 import { asyncHandler } from '../../utils/asyncHandler';
 import { NotFoundError } from '../../utils/errors';
-import { deleteAttachmentFilesForRecord } from '../../lib/attachmentStorage';
+import { deleteAttachmentFilesForRecord } from '../../lib/storage';
 import { computeChecklistScore } from './scoring';
 
 const include = {

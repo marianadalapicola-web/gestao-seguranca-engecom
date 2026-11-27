@@ -8,7 +8,7 @@ import { recordAudit } from './audit';
 import { NotFoundError } from '../utils/errors';
 import { Module } from '../config/permissions';
 import { prisma } from './prisma';
-import { deleteAttachmentFilesForRecord } from './attachmentStorage';
+import { deleteAttachmentFilesForRecord } from './storage';
 
 interface FilterDef {
   param: string;

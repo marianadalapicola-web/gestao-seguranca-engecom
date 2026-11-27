@@ -1,13 +1,12 @@
-import fs from 'fs';
-import path from 'path';
 import { Request, Response } from 'express';
+import { v4 as uuidv4 } from 'uuid';
 import { prisma } from '../../lib/prisma';
 import { recordAudit } from '../../lib/audit';
 import { asyncHandler } from '../../utils/asyncHandler';
-import { UnauthorizedError, ValidationError } from '../../utils/errors';
+import { NotFoundError, UnauthorizedError, ValidationError } from '../../utils/errors';
 import { getPermissionsForRole, ROLE_LABELS, Role } from '../../config/permissions';
 import { comparePassword, hashPassword, isStrongPassword } from '../../utils/password';
-import { AVATAR_UPLOAD_ROOT } from '../../lib/attachmentStorage';
+import { putFile, getFileStream, deleteFile } from '../../lib/storage';
 import { setAuthCookies, clearAuthCookies } from './cookies';
 import {
   authenticateUser,
@@ -153,13 +152,13 @@ export const updateProfile = asyncHandler(async (req: Request, res: Response) =>
   res.json({ user: serializeUser(user) });
 });
 
-// Só removemos o arquivo antigo se ele mora no nosso próprio diretório de
+// Só removemos o arquivo antigo se ele mora no nosso próprio endpoint de
 // avatares — nunca tentar apagar uma URL externa hipotética.
 function unlinkAvatarFile(avatarUrl: string | null | undefined) {
   if (!avatarUrl) return;
   const match = avatarUrl.match(/^\/api\/avatars\/([^/]+)$/);
   if (!match) return;
-  fs.unlink(path.join(AVATAR_UPLOAD_ROOT, match[1]), () => undefined);
+  deleteFile('avatars', match[1]).catch(() => undefined);
 }
 
 export const uploadAvatar = asyncHandler(async (req: Request, res: Response) => {
@@ -167,7 +166,10 @@ export const uploadAvatar = asyncHandler(async (req: Request, res: Response) => 
 
   const previous = await prisma.user.findUniqueOrThrow({ where: { id: req.user!.id } });
 
-  const avatarUrl = `/api/avatars/${req.file.filename}`;
+  const fileKey = `${uuidv4()}.${req.file.mimetype.split('/')[1]}`;
+  await putFile('avatars', fileKey, req.file.buffer, req.file.mimetype);
+
+  const avatarUrl = `/api/avatars/${fileKey}`;
   const user = await prisma.user.update({ where: { id: req.user!.id }, data: { avatarUrl } });
   unlinkAvatarFile(previous.avatarUrl);
 
@@ -184,4 +186,18 @@ export const removeAvatar = asyncHandler(async (req: Request, res: Response) => 
   await recordAudit({ userId: user.id, action: 'UPDATE', module: 'profile', recordId: user.id, req, details: { avatar: 'removed' } });
 
   res.json({ user: serializeUser(user) });
+});
+
+// Fotos de perfil são públicas (não passam pelo controle de permissão por
+// módulo dos anexos), mas ainda precisam ir por uma rota nossa — e não por
+// express.static — para funcionar com o driver de armazenamento S3/R2 e não
+// só com disco local.
+export const serveAvatar = asyncHandler(async (req: Request, res: Response) => {
+  const file = await getFileStream('avatars', req.params.key);
+  if (!file) throw new NotFoundError();
+
+  if (file.contentType) res.setHeader('Content-Type', file.contentType);
+  if (file.contentLength) res.setHeader('Content-Length', String(file.contentLength));
+  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  file.stream.pipe(res);
 });

@@ -1,4 +1,3 @@
-import fs from 'fs';
 import path from 'path';
 import { Router } from 'express';
 import multer from 'multer';
@@ -12,7 +11,7 @@ import { asyncHandler } from '../../utils/asyncHandler';
 import { recordAudit } from '../../lib/audit';
 import { ForbiddenError, NotFoundError, ValidationError } from '../../utils/errors';
 import { Module, hasPermission } from '../../config/permissions';
-import { UPLOAD_ROOT } from '../../lib/attachmentStorage';
+import { putFile, getFileStream, deleteFile } from '../../lib/storage';
 
 const MODULE_TO_FK: Record<string, { field: string; delegate: string }> = {
   rituals: { field: 'ritualId', delegate: 'ritual' },
@@ -38,16 +37,10 @@ const ALLOWED_MIME = new Set([
 ]);
 const MAX_SIZE_BYTES = 15 * 1024 * 1024; // 15MB
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, UPLOAD_ROOT),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).slice(0, 10);
-    cb(null, `${uuidv4()}${ext}`);
-  },
-});
-
+// Buffered in memory, then handed to the storage driver (disk or S3/R2) —
+// this keeps the route code the same regardless of which driver is active.
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: MAX_SIZE_BYTES },
   fileFilter: (_req, file, cb) => {
     if (!ALLOWED_MIME.has(file.mimetype)) {
@@ -75,7 +68,6 @@ router.post(
     if (!req.file) throw new ValidationError('Nenhum arquivo enviado.');
 
     if (!hasPermission(req.user!.role, module as Module, 'update')) {
-      fs.unlink(req.file.path, () => undefined);
       throw new ForbiddenError('Seu perfil não pode anexar evidências neste módulo.');
     }
 
@@ -83,16 +75,18 @@ router.post(
     const delegate = (prisma as unknown as Record<string, any>)[mapping.delegate];
     const parent = await delegate.findUnique({ where: { id: recordId } });
     if (!parent) {
-      fs.unlink(req.file.path, () => undefined);
       throw new NotFoundError('Registro relacionado não encontrado.');
     }
+
+    const storedFileName = `${uuidv4()}${path.extname(req.file.originalname).slice(0, 10)}`;
+    await putFile('attachments', storedFileName, req.file.buffer, req.file.mimetype);
 
     const attachment = await prisma.attachment.create({
       data: {
         module,
         recordId,
         fileName: req.file.originalname,
-        storedFileName: req.file.filename,
+        storedFileName,
         mimeType: req.file.mimetype,
         size: req.file.size,
         uploadedById: req.user!.id,
@@ -127,10 +121,13 @@ router.get(
 
     if (!hasPermission(req.user!.role, attachment.module as Module, 'read')) throw new ForbiddenError();
 
-    const filePath = path.join(UPLOAD_ROOT, attachment.storedFileName);
-    if (!fs.existsSync(filePath)) throw new NotFoundError('Arquivo não encontrado no armazenamento.');
+    const file = await getFileStream('attachments', attachment.storedFileName);
+    if (!file) throw new NotFoundError('Arquivo não encontrado no armazenamento.');
 
-    res.download(filePath, attachment.fileName);
+    res.setHeader('Content-Type', file.contentType ?? attachment.mimeType);
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(attachment.fileName)}"`);
+    if (file.contentLength) res.setHeader('Content-Length', String(file.contentLength));
+    file.stream.pipe(res);
   })
 );
 
@@ -143,8 +140,7 @@ router.delete(
     if (!hasPermission(req.user!.role, attachment.module as Module, 'update')) throw new ForbiddenError();
 
     await prisma.attachment.delete({ where: { id: attachment.id } });
-    const filePath = path.join(UPLOAD_ROOT, attachment.storedFileName);
-    fs.unlink(filePath, () => undefined);
+    await deleteFile('attachments', attachment.storedFileName);
 
     await recordAudit({ userId: req.user!.id, action: 'DELETE', module: 'attachments', recordId: attachment.id, req });
     res.status(204).send();

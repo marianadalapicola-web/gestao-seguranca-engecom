@@ -1,11 +1,8 @@
-import path from 'path';
 import { Router } from 'express';
 import multer from 'multer';
-import { v4 as uuidv4 } from 'uuid';
 import { validate } from '../../middleware/validate';
 import { authenticate } from '../../middleware/auth';
 import { ValidationError } from '../../utils/errors';
-import { AVATAR_UPLOAD_ROOT } from '../../lib/attachmentStorage';
 import {
   changePassword,
   forgotPassword,
@@ -30,10 +27,7 @@ const ALLOWED_AVATAR_MIME = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const MAX_AVATAR_SIZE_BYTES = 4 * 1024 * 1024; // 4MB — é uma foto de perfil, não um anexo técnico.
 
 const avatarUpload = multer({
-  storage: multer.diskStorage({
-    destination: (_req, _file, cb) => cb(null, AVATAR_UPLOAD_ROOT),
-    filename: (_req, file, cb) => cb(null, `${uuidv4()}${path.extname(file.originalname).slice(0, 10)}`),
-  }),
+  storage: multer.memoryStorage(),
   limits: { fileSize: MAX_AVATAR_SIZE_BYTES },
   fileFilter: (_req, file, cb) => {
     if (!ALLOWED_AVATAR_MIME.has(file.mimetype)) {

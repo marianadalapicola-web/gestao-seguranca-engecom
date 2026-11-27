@@ -30,7 +30,7 @@ import reportsRoutes from './modules/reports/routes';
 import searchRoutes from './modules/search/routes';
 import leadershipRankingRoutes from './modules/leadershipRanking/routes';
 import leadersRoutes from './modules/leaders/routes';
-import { AVATAR_UPLOAD_ROOT } from './lib/attachmentStorage';
+import { serveAvatar } from './modules/auth/controller';
 
 export const app = express();
 
@@ -78,10 +78,12 @@ app.use('/api/search', searchRoutes);
 app.use('/api/leadership-ranking', leadershipRankingRoutes);
 app.use('/api/leaders', leadersRoutes);
 
-// Fotos de perfil: arquivo estático simples (não passa pelo controle de
-// permissão por módulo dos anexos — é uma foto de perfil, não um registro
-// de segurança). Nomes de arquivo são UUIDs, não previsíveis.
-app.use('/api/avatars', express.static(AVATAR_UPLOAD_ROOT));
+// Fotos de perfil: servidas por rota própria (não express.static) para
+// funcionar com os dois drivers de armazenamento (disco local ou S3/R2) —
+// não passa pelo controle de permissão por módulo dos anexos, pois é uma
+// foto de perfil, não um registro de segurança. Nomes de arquivo são UUIDs,
+// não previsíveis.
+app.get('/api/avatars/:key', serveAvatar);
 
 // In production this single service also serves the built React app, so
 // only one deployable unit (+ Postgres) is needed. In development the
